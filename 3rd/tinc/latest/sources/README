@@ -1,11 +1,7 @@
-This is the README file for tinc version 1.0.36. Installation
+This is the README file for tinc version 1.1pre18. Installation
 instructions may be found in the INSTALL file.
 
-tinc is Copyright (C) 1998-2019 by:
-
-Ivo Timmermans,
-Guus Sliepen <guus@tinc-vpn.org>,
-and others.
+tinc is Copyright © 1998-2021 Ivo Timmermans, Guus Sliepen <guus@tinc-vpn.org>, and others.
 
 For a complete list of authors see the AUTHORS file.
 
@@ -15,119 +11,94 @@ the Free Software Foundation; either version 2 of the License, or (at
 your option) any later version. See the file COPYING for more details.
 
 
+This is a pre-release
+---------------------
+
+Please note that this is NOT a stable release. Until version 1.1.0 is released,
+please use one of the 1.0.x versions if you need a stable version of tinc.
+
+Although tinc 1.1 will be protocol compatible with tinc 1.0.x, the
+functionality of the tinc program may still change, and the control socket
+protocol is not fixed yet.
+
+
 Security statement
 ------------------
 
-In August 2000, we discovered the existence of a security hole in all versions
-of tinc up to and including 1.0pre2. This had to do with the way we exchanged
-keys. Since then, we have been working on a new authentication scheme to make
-tinc as secure as possible. The current version uses the OpenSSL library and
-uses strong authentication with RSA keys.
+This version uses an experimental and unfinished cryptographic protocol. Use it
+at your own risk.
 
-On the 29th of December 2001, Jerome Etienne posted a security analysis of tinc
-1.0pre4. Due to a lack of sequence numbers and a message authentication code
-for each packet, an attacker could possibly disrupt certain network services or
-launch a denial of service attack by replaying intercepted packets. The current
-version adds sequence numbers and message authentication codes to prevent such
-attacks.
-
-On September the 15th of 2003, Peter Gutmann contacted us and showed us a
-writeup describing various security issues in several VPN daemons. He showed
-that tinc lacks perfect forward security, the connection authentication could
-be done more properly, that the sequence number we use as an IV is not the best
-practice and that the default length of the HMAC for packets is too short in
-his opinion. We do not know of a way to exploit these weaknesses, but these
-issues are being addressed in the tinc 1.1 branch.
-
-The Sweet32 attack affects versions of tinc prior to 1.0.30.
-
-On September 6th, 2018, Michael Yonly contacted us and provided
-proof-of-concept code that allowed a remote attacker to create an
-authenticated, one-way connection with a node, and also that there was a
+When connecting to nodes that use the legacy protocol used in tinc 1.0, be
+aware that any security issues in tinc 1.0 will apply to tinc 1.1 as well. On
+September 6th, 2018, Michael Yonly contacted us and provided proof-of-concept
+code that allowed a remote attacker to create an authenticated, one-way
+connection with a node using the legacy protocol, and also that there was a
 possibility for a man-in-the-middle to force UDP packets from a node to be sent
 in plaintext. The first issue was trivial to exploit on tinc versions prior to
 1.0.30, but the changes in 1.0.30 to mitigate the Sweet32 attack made this
-weakness much harder to exploit. These issues have been fixed in tinc 1.0.35.
-The new protocol in the tinc 1.1 branch is not susceptible to these issues.
-
-Cryptography is a hard thing to get right. We cannot make any
-guarantees. Time, review and feedback are the only things that can
-prove the security of any cryptographic product. If you wish to review
-tinc or give us feedback, you are strongly encouraged to do so.
+weakness much harder to exploit. These issues have been fixed in tinc 1.0.35
+and tinc 1.1pre17. The new protocol in the tinc 1.1 branch is not susceptible
+to these issues. However, be aware that SPTPS is only used between nodes
+running tinc 1.1pre* or later, and in a VPN with nodes running different
+versions, the security might only be as good as that of the oldest version.
 
 
 Compatibility
 -------------
 
-Version 1.0.35 is compatible with 1.0pre8, 1.0 and later, but not with older
-versions of tinc. Note that since version 1.0.30, tinc requires all nodes in
-the VPN to be compiled with a version of LibreSSL or OpenSSL that supports the
-AES256 and SHA256 algorithms.
+Version 1.1pre18 is compatible with 1.0pre8, 1.0 and later, but not with older
+versions of tinc.
+
+When the ExperimentalProtocol option is used, tinc is still compatible with
+1.0.X, 1.1pre11 and later, but not with any version between 1.1pre1 and
+1.1pre10.
 
 
 Requirements
 ------------
 
-The OpenSSL library is used for all cryptographic functions. You can find it at
-https://www.openssl.org/. You will need version 1.0.1 or later with support for
-AES256 and SHA256 enabled. If this library is not installed on your system, the
-configure script will fail.  The manual in doc/tinc.texi contains more detailed
-information on how to install this library. Alternatively, you may also use the
-LibreSSL library.
+In order to compile tinc, you will need a GNU C compiler environment. Please
+ensure you have the latest stable versions of all the required libraries:
 
-The zlib library is used for optional compression. You can
-find it at https://zlib.net/. Because of a possible exploit in
-earlier versions we recommend that you download version 1.1.4 or later.
+- LibreSSL (http://www.libressl.org/) or OpenSSL (https://openssl.org/) version 1.0.0 or later.
 
-The LZO library is also used for optional compression. You can
-find it at https://www.oberhumer.com/opensource/lzo/.
+The following libraries are used by default, but can be disabled if necessary:
 
-In order to compile tinc, you will need a C99 compliant compiler.
+- zlib (https://zlib.net/)
+- LZO (https://www.oberhumer.com/opensource/lzo/)
+- ncurses (https://invisible-island.net/ncurses/)
+- readline (https://cnswww.cns.cwru.edu/php/chet/readline/rltop.html)
 
 
 Features
 --------
 
-This version of tinc supports multiple virtual networks at once. To
-use this feature, you may supply a netname via the -n or --net
-options. The standard locations for the config files will then be
-/etc/tinc/<net>/.
+Tinc is a peer-to-peer VPN daemon that supports VPNs with an arbitrary number
+of nodes. Instead of configuring tunnels, you give tinc the location and
+public key of a few nodes in the VPN. After making the initial connections to
+those nodes, tinc will learn about all other nodes on the VPN, and will make
+connections automatically. When direct connections are not possible, data will
+be forwarded by intermediate nodes.
 
-tincd regenerates its encryption key pairs. It does this on the first
-activity after the keys have expired. This period is adjustable in the
-configuration file, and the default time is 3600 seconds (one hour).
+Tinc 1.1 support two protocols. The first is a legacy protocol that provides
+backwards compatibility with tinc 1.0 nodes, and which by default uses 2048 bit
+RSA keys for authentication, and encrypts traffic using AES256 in CBC mode
+and HMAC-SHA256. The second is a new protocol which uses Curve25519 keys for
+authentication, and encrypts traffic using Chacha20-Poly1305, and provides
+forward secrecy.
 
-This version supports multiple subnets at once. They are also sorted
-on subnet mask size. This means that it is possible to have
-overlapping subnets on the VPN, as long as their subnet mask sizes
-differ.
+Tinc fully supports IPv6.
 
-Since pre5, tinc can operate in several routing modes. The default mode,
-"router", works exactly like the older version, and uses Subnet lines to
-determine the destination of packets. The other two modes, "switch" and "hub",
-allow the tinc daemons to work together like a single network switch or hub.
-This is useful for bridging networks. The latter modes only work properly on
-Linux, FreeBSD and Windows.
-
-The algorithms used for encryption and generating message authentication codes
-can now be changed in the configuration files. All cipher and digest algorithms
-supported by OpenSSL can be used. Useful ciphers are "blowfish" (default),
-"bf-ofb", "des", "des3", et cetera. Useful digests are "sha1" (default), "md5",
-et cetera.
-
-Support for routing IPv6 packets has been added. Just add Subnet lines with
-IPv6 addresses (without using :: abbreviations) and use ifconfig or ip (from
-the iproute package) to give the virtual network interface corresponding IPv6
-addresses. tinc does not provide autoconfiguration for IPv6 hosts. Consider
-using radvd or zebra if you need it.
-
-It is also possible to make tunnels to other tinc daemons over IPv6 networks,
-if the operating system supports IPv6.  tinc will automatically use both IPv6
-and IPv4 when available, but this can be changed by adding the option
-"AddressFamily = ipv4" or "AddressFamily = ipv6" to the tinc.conf file.
+Tinc can operate in several routing modes. In the default mode, "router", every
+node is associated with one or more IPv4 and/or IPv6 Subnets. The other two
+modes, "switch" and "hub", let the tinc daemons work together to form a virtual
+Ethernet network switch or hub.
 
 Normally, when started tinc will detach and run in the background. In a native
 Windows environment this means tinc will install itself as a service, which will
-restart after reboots.  To prevent tinc from detaching or running as a service,
+restart after reboots. To prevent tinc from detaching or running as a service,
 use the -D option.
 
+The status of the VPN can be queried using the "tinc" command, which connects
+to a running tinc daemon via a control connection. The same tool also makes it
+easy to start and stop tinc, and to change its configuration.

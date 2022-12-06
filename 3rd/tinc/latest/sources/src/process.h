@@ -4,7 +4,7 @@
 /*
     process.h -- header file for process.c
     Copyright (C) 1999-2005 Ivo Timmermans,
-                  2000-2006 Guus Sliepen <guus@tinc-vpn.org>
+                  2000-2013 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,15 +22,14 @@
 */
 
 extern bool do_detach;
-extern bool sighup;
 extern bool sigalrm;
 
 extern void setup_signals(void);
-extern bool execute_script(const char *name, char **envp);
 extern bool detach(void);
-extern bool kill_other(int signal);
+extern bool kill_other(int);
 
 #ifdef HAVE_MINGW
+extern io_t stop_io;
 extern bool init_service(void);
 #endif
 

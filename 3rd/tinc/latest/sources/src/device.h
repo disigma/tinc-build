@@ -25,21 +25,22 @@
 
 extern int device_fd;
 extern char *device;
-
 extern char *iface;
 
 typedef struct devops_t {
 	bool (*setup)(void);
 	void (*close)(void);
-	bool (*read)(struct vpn_packet_t *packet);
-	bool (*write)(struct vpn_packet_t *packet);
-	void (*dump_stats)(void);
+	bool (*read)(struct vpn_packet_t *);
+	bool (*write)(struct vpn_packet_t *);
+	void (*enable)(void);   /* optional */
+	void (*disable)(void);  /* optional */
 } devops_t;
 
 extern const devops_t os_devops;
 extern const devops_t dummy_devops;
 extern const devops_t raw_socket_devops;
 extern const devops_t multicast_devops;
+extern const devops_t fd_devops;
 extern const devops_t uml_devops;
 extern const devops_t vde_devops;
 extern devops_t devops;

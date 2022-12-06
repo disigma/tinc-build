@@ -1,9 +1,11 @@
 We would like to thank the following people for their contributions to tinc:
 
+* Aaron Li
 * Alexander Reil and Gemeinde Berg
 * Alexander Ried
 * Alexis Hildebrandt
 * Allesandro Gatti
+* Andreas Rammhold
 * Andreas van Cranenburgh
 * Andrew Hahn
 * Anthony G. Basile
@@ -22,28 +24,32 @@ We would like to thank the following people for their contributions to tinc:
 * Delf Eldkraft
 * Dennis Joachimsthaler
 * dnk
-* Егор Палкин
 * Élie Bouttier
 * Enrique Zanardi
 * Erik Tews
 * Etienne Dechamps
+* Fabian Maurer
 * Florent Clairambault
 * Florian Forster
 * Florian Klink
 * Florian Weik
 * Flynn Marquardt
 * Franz Pletz
+* Fufu Fang
 * Gary Kessler and Claudia Gonzalez
 * Grzegorz Dymarek
 * Gusariev Oleksandr
 * Hans Bayle
 * Harvest
-* Ivo van Dong
+* Huai An Hsu
+* iczero
+* Ilia Pavlikhin
+* Ivan Mirić
 * Ivo Smits
+* Ivo van Dong
 * James Cook
 * James MacLean
 * Jamie Briggs
-* Jan Štembera
 * Jason Harper
 * Jason Livesay
 * Jasper Krijgsman
@@ -51,17 +57,21 @@ We would like to thank the following people for their contributions to tinc:
 * Jeroen Domburg
 * Jeroen Ubbink
 * Jerome Etienne
-* Jo-Philipp Wich
+* Jiang Sheng
 * Jochen Voss
+* Jo-Philipp Wich
 * Julien Muchembled
 * Lavrans Laading
+* leptonyu
 * Loïc Dachary
 * Loïc Grenié
 * Lubomír Bulej
 * luckyhacky
 * LunarShaddow
+* Maciej S. Szmigiero
 * Mads Kiilerich
 * Marc A. Lehmann
+* Marco Oggioni
 * Mark Glines
 * Mark Petryk
 * Markus Goetz
@@ -73,30 +83,33 @@ We would like to thank the following people for their contributions to tinc:
 * Max Rijevski
 * Menno Smits
 * Mesar Hameed
-* Michael Taylor
 * Michael Tokarev
 * Michael Yonli
 * Miles Nordin
-* Nathan Stratton Treadway
 * Murat Donmez
+* Nathan Stratton Treadway
 * Nick Hibma
 * Nick Patavalis
+* Pacien Tran-Girard
+* Patrick Helms
 * Paul Littlefield
 * Philipp Babel
 * Pierre Emeriaud
 * Pierre-Olivier Mercier
-* Rafael Wolf
 * Rafael Sadowski
 * Rafał Leśniak
+* René Rüthlein
 * Rhosyn Celyn
 * Robert van der Meulen
 * Robert Waniek
+* Rosen Penev
 * Rumko
 * Ryan Miller
 * Sam Bryan
 * Samuel Thibault
 * Saverio Proto
 * Scott Lamb
+* Shengjing Zhu
 * Steffan Karger
 * Stig Fagrell
 * Sven-Haegar Koch
@@ -111,7 +124,9 @@ We would like to thank the following people for their contributions to tinc:
 * Vil Brekin
 * Vincent Laurent
 * Vittorio Gambaletta
+* Volker Augustin
 * Wendy Willard
+* Werner Schreiber
 * Wessel Dankers
 * William A. Kennington III
 * William McArthur

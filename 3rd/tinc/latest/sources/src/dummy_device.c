@@ -1,6 +1,6 @@
 /*
     device.c -- Dummy device
-    Copyright (C) 2011 Guus Sliepen <guus@tinc-vpn.org>
+    Copyright (C) 2011-2012 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,19 +26,14 @@
 
 static const char *device_info = "dummy device";
 
-static uint64_t device_total_in = 0;
-static uint64_t device_total_out = 0;
-
 static bool setup_device(void) {
 	device = xstrdup("dummy");
 	iface = xstrdup("dummy");
-	logger(LOG_INFO, "%s (%s) is a %s", device, iface, device_info);
+	logger(DEBUG_ALWAYS, LOG_INFO, "%s (%s) is a %s", device, iface, device_info);
 	return true;
 }
 
 static void close_device(void) {
-	free(device);
-	free(iface);
 }
 
 static bool read_packet(vpn_packet_t *packet) {
@@ -47,14 +42,8 @@ static bool read_packet(vpn_packet_t *packet) {
 }
 
 static bool write_packet(vpn_packet_t *packet) {
-	device_total_out += packet->len;
+	(void)packet;
 	return true;
-}
-
-static void dump_device_stats(void) {
-	logger(LOG_DEBUG, "Statistics for %s %s:", device_info, device);
-	logger(LOG_DEBUG, " total bytes in:  %10"PRIu64, device_total_in);
-	logger(LOG_DEBUG, " total bytes out: %10"PRIu64, device_total_out);
 }
 
 const devops_t dummy_devops = {
@@ -62,5 +51,4 @@ const devops_t dummy_devops = {
 	.close = close_device,
 	.read = read_packet,
 	.write = write_packet,
-	.dump_stats = dump_device_stats,
 };

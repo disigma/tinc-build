@@ -3,7 +3,7 @@
 
 /*
     edge.h -- header for edge.c
-    Copyright (C) 2001-2006 Guus Sliepen <guus@tinc-vpn.org>,
+    Copyright (C) 2001-2012 Guus Sliepen <guus@tinc-vpn.org>,
                   2001-2005 Ivo Timmermans
 
     This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "avl_tree.h"
+#include "splay_tree.h"
 #include "connection.h"
 #include "net.h"
 #include "node.h"
@@ -30,25 +30,26 @@ typedef struct edge_t {
 	struct node_t *from;
 	struct node_t *to;
 	sockaddr_t address;
+	sockaddr_t local_address;
 
-	uint32_t options;                /* options turned on for this edge */
-	int weight;                      /* weight of this edge */
+	uint32_t options;                       /* options turned on for this edge */
+	int weight;                             /* weight of this edge */
 
-	struct connection_t *connection; /* connection associated with this edge, if available */
-	struct edge_t *reverse;          /* edge in the opposite direction, if available */
+	struct connection_t *connection;        /* connection associated with this edge, if available */
+	struct edge_t *reverse;                 /* edge in the opposite direction, if available */
 } edge_t;
 
-extern avl_tree_t *edge_weight_tree;     /* Tree with all known edges sorted on weight */
+extern splay_tree_t *edge_weight_tree;          /* Tree with all known edges sorted on weight */
 
 extern void init_edges(void);
 extern void exit_edges(void);
 extern edge_t *new_edge(void) __attribute__((__malloc__));
 extern void free_edge(edge_t *e);
-extern avl_tree_t *new_edge_tree(void) __attribute__((__malloc__));
-extern void free_edge_tree(avl_tree_t *edge_tree);
+extern splay_tree_t *new_edge_tree(void) __attribute__((__malloc__));
+extern void free_edge_tree(splay_tree_t *edge_tree);
 extern void edge_add(edge_t *e);
 extern void edge_del(edge_t *e);
 extern edge_t *lookup_edge(struct node_t *from, struct node_t *to);
-extern void dump_edges(void);
+extern bool dump_edges(struct connection_t *c);
 
 #endif

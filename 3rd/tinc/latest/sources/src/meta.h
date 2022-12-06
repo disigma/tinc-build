@@ -3,7 +3,7 @@
 
 /*
     meta.h -- header for meta.c
-    Copyright (C) 2000-2006 Guus Sliepen <guus@tinc-vpn.org>,
+    Copyright (C) 2000-2014 Guus Sliepen <guus@tinc-vpn.org>,
                   2000-2005 Ivo Timmermans
 
     This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,11 @@
 
 #include "connection.h"
 
-extern bool send_meta(struct connection_t *c, const char *buffer, int length);
-extern void broadcast_meta(struct connection_t *c, const char *buffer, int length);
-extern bool flush_meta(struct connection_t *c);
+extern bool send_meta(struct connection_t *c, const char *buffer, size_t length);
+extern void send_meta_raw(struct connection_t *c, const char *buffer, size_t length);
+extern bool send_meta_sptps(void *handle, uint8_t type, const void *data, size_t length);
+extern bool receive_meta_sptps(void *handle, uint8_t type, const void *data, uint16_t length);
+extern void broadcast_meta(struct connection_t *from, const char *buffer, size_t length);
 extern bool receive_meta(struct connection_t *c);
 
 #endif

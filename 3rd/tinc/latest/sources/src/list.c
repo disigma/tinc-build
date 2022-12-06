@@ -1,7 +1,7 @@
 /*
     list.c -- functions to deal with double linked lists
     Copyright (C) 2000-2005 Ivo Timmermans
-                  2000-2006 Guus Sliepen <guus@tinc-vpn.org>
+                  2000-2013 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,7 @@
 /* (De)constructors */
 
 list_t *list_alloc(list_action_t delete) {
-	list_t *list;
-
-	list = xmalloc_and_zero(sizeof(list_t));
+	list_t *list = xzalloc(sizeof(list_t));
 	list->delete = delete;
 
 	return list;
@@ -39,7 +37,7 @@ void list_free(list_t *list) {
 }
 
 list_node_t *list_alloc_node(void) {
-	return xmalloc_and_zero(sizeof(list_node_t));
+	return xzalloc(sizeof(list_node_t));
 }
 
 void list_free_node(list_t *list, list_node_t *node) {
@@ -53,9 +51,7 @@ void list_free_node(list_t *list, list_node_t *node) {
 /* Insertion and deletion */
 
 list_node_t *list_insert_head(list_t *list, void *data) {
-	list_node_t *node;
-
-	node = list_alloc_node();
+	list_node_t *node = list_alloc_node();
 
 	node->data = data;
 	node->prev = NULL;
@@ -74,14 +70,52 @@ list_node_t *list_insert_head(list_t *list, void *data) {
 }
 
 list_node_t *list_insert_tail(list_t *list, void *data) {
-	list_node_t *node;
-
-	node = list_alloc_node();
+	list_node_t *node = list_alloc_node();
 
 	node->data = data;
 	node->next = NULL;
 	node->prev = list->tail;
 	list->tail = node;
+
+	if(node->prev) {
+		node->prev->next = node;
+	} else {
+		list->head = node;
+	}
+
+	list->count++;
+
+	return node;
+}
+
+list_node_t *list_insert_after(list_t *list, list_node_t *after, void *data) {
+	list_node_t *node = list_alloc_node();
+
+	node->data = data;
+	node->next = after->next;
+	node->prev = after;
+	after->next = node;
+
+	if(node->next) {
+		node->next->prev = node;
+	} else {
+		list->tail = node;
+	}
+
+	list->count++;
+
+	return node;
+}
+
+list_node_t *list_insert_before(list_t *list, list_node_t *before, void *data) {
+	list_node_t *node;
+
+	node = list_alloc_node();
+
+	node->data = data;
+	node->next = before;
+	node->prev = before->prev;
+	before->prev = node;
 
 	if(node->prev) {
 		node->prev->next = node;
@@ -123,6 +157,13 @@ void list_delete_tail(list_t *list) {
 	list_delete_node(list, list->tail);
 }
 
+void list_delete(list_t *list, const void *data) {
+	for(list_node_t *node = list->head, *next; next = node ? node->next : NULL, node; node = next)
+		if(node->data == data) {
+			list_delete_node(list, node);
+		}
+}
+
 /* Head/tail lookup */
 
 void *list_get_head(list_t *list) {
@@ -144,10 +185,7 @@ void *list_get_tail(list_t *list) {
 /* Fast list deletion */
 
 void list_delete_list(list_t *list) {
-	list_node_t *node, *next;
-
-	for(node = list->head; node; node = next) {
-		next = node->next;
+	for(list_node_t *node = list->head, *next; next = node ? node->next : NULL, node; node = next) {
 		list_free_node(list, node);
 	}
 
@@ -157,22 +195,14 @@ void list_delete_list(list_t *list) {
 /* Traversing */
 
 void list_foreach_node(list_t *list, list_action_node_t action) {
-	list_node_t *node, *next;
-
-	for(node = list->head; node; node = next) {
-		next = node->next;
+	for(list_node_t *node = list->head, *next; next = node ? node->next : NULL, node; node = next) {
 		action(node);
 	}
 }
 
 void list_foreach(list_t *list, list_action_t action) {
-	list_node_t *node, *next;
-
-	for(node = list->head; node; node = next) {
-		next = node->next;
-
+	for(list_node_t *node = list->head, *next; next = node ? node->next : NULL, node; node = next)
 		if(node->data) {
 			action(node->data);
 		}
-	}
 }

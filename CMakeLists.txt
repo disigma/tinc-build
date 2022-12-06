@@ -7,7 +7,7 @@ endif()
 include(cmake/MeRoot.cmake)
 include(cmake/Me.cmake)
 
-me_import(tinc-1.0.36)
+me_import(tinc-1.1pre18)
 
 me_import(${ME_EXTRA_PROJECTS})
 

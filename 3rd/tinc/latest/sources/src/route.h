@@ -50,10 +50,10 @@ extern bool directonly;
 extern bool overwrite_mac;
 extern bool priorityinheritance;
 extern int macexpire;
+extern bool pcap;
 
 extern mac_t mymac;
 
-extern void age_subnets(void);
 extern void route(struct node_t *source, struct vpn_packet_t *packet);
 
 #endif

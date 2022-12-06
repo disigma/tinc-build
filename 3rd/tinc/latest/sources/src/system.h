@@ -4,7 +4,7 @@
 /*
     system.h -- system headers
     Copyright (C) 1998-2005 Ivo Timmermans
-                  2003-2006 Guus Sliepen <guus@tinc-vpn.org>
+                  2003-2016 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-#include "config.h"
+#include "../config.h"
 
 #include "have.h"
 
@@ -32,9 +32,5 @@
 /* Other functions */
 
 #include "dropin.h"
-
-#ifndef HAVE_SOCKLEN_T
-typedef int socklen_t;
-#endif
 
 #endif

@@ -132,7 +132,7 @@ int optind = 1;
    causes problems with re-calling getopt as programs generally don't
    know that. */
 
-int getopt_initialized = 0;
+int __getopt_initialized = 0;
 
 /* The next char to be scanned in the option-element
    in which the last option character we returned was found.
@@ -248,7 +248,7 @@ static int last_nonopt;
    indicating ARGV elements that should not be considered arguments.  */
 
 /* Defined in getopt_init.c  */
-extern char *getopt_nonoption_flags;
+extern char *__getopt_nonoption_flags;
 
 static int nonoption_flags_max_len;
 static int nonoption_flags_len;
@@ -256,7 +256,7 @@ static int nonoption_flags_len;
 static int original_argc;
 static char *const *original_argv;
 
-extern pid_t libc_pid;
+extern pid_t __libc_pid;
 
 /* Make sure the environment variable bash 2.0 puts in the environment
    is valid for the getopt call we must make sure that the ARGV passed
@@ -269,14 +269,14 @@ store_args_and_env(int argc, char *const *argv) {
 	original_argc = argc;
 	original_argv = argv;
 }
-text_set_element(libc_subinit, store_args_and_env);
+text_set_element(__libc_subinit, store_args_and_env);
 
 # define SWAP_FLAGS(ch1, ch2) \
 	if (nonoption_flags_len > 0)                                                \
 	{                                                                         \
-		char tmp = getopt_nonoption_flags[ch1];                         \
-		getopt_nonoption_flags[ch1] = getopt_nonoption_flags[ch2];              \
-		getopt_nonoption_flags[ch2] = tmp;                                      \
+		char __tmp = __getopt_nonoption_flags[ch1];                             \
+		__getopt_nonoption_flags[ch1] = __getopt_nonoption_flags[ch2];          \
+		__getopt_nonoption_flags[ch2] = __tmp;                                  \
 	}
 #else   /* !_LIBC */
 # define SWAP_FLAGS(ch1, ch2)
@@ -311,7 +311,7 @@ char **argv;
 
 #ifdef _LIBC
 
-	/* First make sure the handling of the `getopt_nonoption_flags'
+	/* First make sure the handling of the `__getopt_nonoption_flags'
 	   string can work normally.  Our top argument must be in the range
 	   of the string.  */
 	if(nonoption_flags_len > 0 && top >= nonoption_flags_max_len) {
@@ -322,11 +322,11 @@ char **argv;
 		if(new_str == NULL) {
 			nonoption_flags_len = nonoption_flags_max_len = 0;
 		} else {
-			memcpy(new_str, getopt_nonoption_flags, nonoption_flags_max_len);
+			memcpy(new_str, __getopt_nonoption_flags, nonoption_flags_max_len);
 			memset(&new_str[nonoption_flags_max_len], '\0',
 			       top + 1 - nonoption_flags_max_len);
 			nonoption_flags_max_len = top + 1;
-			getopt_nonoption_flags = new_str;
+			__getopt_nonoption_flags = new_str;
 		}
 	}
 
@@ -412,25 +412,25 @@ const char *optstring;
 	if(posixly_correct == NULL
 	                && argc == original_argc && argv == original_argv) {
 		if(nonoption_flags_max_len == 0) {
-			if(getopt_nonoption_flags == NULL
-			                || getopt_nonoption_flags[0] == '\0') {
+			if(__getopt_nonoption_flags == NULL
+			                || __getopt_nonoption_flags[0] == '\0') {
 				nonoption_flags_max_len = -1;
 			} else {
-				const char *orig_str = getopt_nonoption_flags;
+				const char *orig_str = __getopt_nonoption_flags;
 				int len = nonoption_flags_max_len = strlen(orig_str);
 
 				if(nonoption_flags_max_len < argc) {
 					nonoption_flags_max_len = argc;
 				}
 
-				getopt_nonoption_flags =
+				__getopt_nonoption_flags =
 				        (char *) malloc(nonoption_flags_max_len);
 
-				if(getopt_nonoption_flags == NULL) {
+				if(__getopt_nonoption_flags == NULL) {
 					nonoption_flags_max_len = -1;
 				} else {
-					memcpy(getopt_nonoption_flags, orig_str, len);
-					memset(&getopt_nonoption_flags[len], '\0',
+					memcpy(__getopt_nonoption_flags, orig_str, len);
+					memset(&__getopt_nonoption_flags[len], '\0',
 					       nonoption_flags_max_len - len);
 				}
 			}
@@ -513,13 +513,13 @@ int long_only;
 {
 	optarg = NULL;
 
-	if(optind == 0 || !getopt_initialized) {
+	if(optind == 0 || !__getopt_initialized) {
 		if(optind == 0) {
 			optind = 1;        /* Don't scan ARGV[0], the program name.  */
 		}
 
 		optstring = _getopt_initialize(argc, argv, optstring);
-		getopt_initialized = 1;
+		__getopt_initialized = 1;
 	}
 
 	/* Test whether ARGV[optind] points to a non-option argument.
@@ -529,7 +529,7 @@ int long_only;
 #ifdef _LIBC
 #define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0'        \
                      || (optind < nonoption_flags_len                         \
-                         && getopt_nonoption_flags[optind] == '1'))
+                         && __getopt_nonoption_flags[optind] == '1'))
 #else
 #define NONOPTION_P (argv[optind][0] != '-' || argv[optind][1] == '\0')
 #endif

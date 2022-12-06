@@ -20,23 +20,20 @@
 
 #include "../system.h"
 
-#ifdef HAVE_LINUX_IF_TUN_H
 #include <linux/if_tun.h>
 #define DEFAULT_DEVICE "/dev/net/tun"
-#else
-#define DEFAULT_DEVICE "/dev/tap0"
-#endif
 
 #include "../conf.h"
 #include "../device.h"
 #include "../logger.h"
+#include "../names.h"
 #include "../net.h"
 #include "../route.h"
 #include "../utils.h"
 #include "../xalloc.h"
+#include "../device.h"
 
 typedef enum device_type_t {
-	DEVICE_TYPE_ETHERTAP,
 	DEVICE_TYPE_TUN,
 	DEVICE_TYPE_TAP,
 } device_type_t;
@@ -49,30 +46,20 @@ static char *type = NULL;
 static char ifrname[IFNAMSIZ];
 static const char *device_info;
 
-static uint64_t device_total_in = 0;
-static uint64_t device_total_out = 0;
-
 static bool setup_device(void) {
-	struct ifreq ifr;
-	bool t1q = false;
-
 	if(!get_config_string(lookup_config(config_tree, "Device"), &device)) {
 		device = xstrdup(DEFAULT_DEVICE);
 	}
 
 	if(!get_config_string(lookup_config(config_tree, "Interface"), &iface))
-#ifdef HAVE_LINUX_IF_TUN_H
-		if(netname != NULL) {
+		if(netname) {
 			iface = xstrdup(netname);
 		}
 
-#else
-		iface = xstrdup(strrchr(device, '/') ? strrchr(device, '/') + 1 : device);
-#endif
 	device_fd = open(device, O_RDWR | O_NONBLOCK);
 
 	if(device_fd < 0) {
-		logger(LOG_ERR, "Could not open %s: %s", device, strerror(errno));
+		logger(DEBUG_ALWAYS, LOG_ERR, "Could not open %s: %s", device, strerror(errno));
 		return false;
 	}
 
@@ -80,15 +67,12 @@ static bool setup_device(void) {
 	fcntl(device_fd, F_SETFD, FD_CLOEXEC);
 #endif
 
-#ifdef HAVE_LINUX_IF_TUN_H
-	/* Ok now check if this is an old ethertap or a new tun/tap thingie */
-
-	memset(&ifr, 0, sizeof(ifr));
+	struct ifreq ifr = {0};
 
 	get_config_string(lookup_config(config_tree, "DeviceType"), &type);
 
 	if(type && strcasecmp(type, "tun") && strcasecmp(type, "tap")) {
-		logger(LOG_ERR, "Unknown device type %s!", type);
+		logger(DEBUG_ALWAYS, LOG_ERR, "Unknown device type %s!", type);
 		return false;
 	}
 
@@ -107,8 +91,10 @@ static bool setup_device(void) {
 	}
 
 #ifdef IFF_ONE_QUEUE
-
 	/* Set IFF_ONE_QUEUE flag... */
+
+	bool t1q = false;
+
 	if(get_config_bool(lookup_config(config_tree, "IffOneQueue"), &t1q) && t1q) {
 		ifr.ifr_flags |= IFF_ONE_QUEUE;
 	}
@@ -125,105 +111,93 @@ static bool setup_device(void) {
 		ifrname[IFNAMSIZ - 1] = 0;
 		free(iface);
 		iface = xstrdup(ifrname);
-	} else if(errno == EPERM || errno == EBUSY) {
-		logger(LOG_ERR, "Error while trying to configure %s: %s", device, strerror(errno));
+	} else {
+		logger(DEBUG_ALWAYS, LOG_ERR, "Could not create a tun/tap interface from %s: %s", device, strerror(errno));
 		return false;
-	} else if(!ioctl(device_fd, (('T' << 8) | 202), &ifr)) {
-		logger(LOG_WARNING, "Old ioctl() request was needed for %s", device);
-		strncpy(ifrname, ifr.ifr_name, IFNAMSIZ);
-		ifrname[IFNAMSIZ - 1] = 0;
-		free(iface);
-		iface = xstrdup(ifrname);
-	} else
-#endif
-	{
-		if(routing_mode == RMODE_ROUTER) {
-			overwrite_mac = true;
+	}
+
+	logger(DEBUG_ALWAYS, LOG_INFO, "%s is a %s", device, device_info);
+
+	if(ifr.ifr_flags & IFF_TAP) {
+		struct ifreq ifr_mac = {0};
+
+		if(!ioctl(device_fd, SIOCGIFHWADDR, &ifr_mac)) {
+			memcpy(mymac.x, ifr_mac.ifr_hwaddr.sa_data, ETH_ALEN);
+		} else {
+			logger(DEBUG_ALWAYS, LOG_WARNING, "Could not get MAC address of %s: %s", device, strerror(errno));
 		}
-
-		device_info = "Linux ethertap device";
-		device_type = DEVICE_TYPE_ETHERTAP;
-		free(iface);
-		iface = xstrdup(strrchr(device, '/') ? strrchr(device, '/') + 1 : device);
 	}
-
-	if(overwrite_mac && !ioctl(device_fd, SIOCGIFHWADDR, &ifr)) {
-		memcpy(mymac.x, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
-	}
-
-	logger(LOG_INFO, "%s is a %s", device, device_info);
 
 	return true;
 }
 
 static void close_device(void) {
 	close(device_fd);
+	device_fd = -1;
 
 	free(type);
+	type = NULL;
 	free(device);
+	device = NULL;
 	free(iface);
+	iface = NULL;
+	device_info = NULL;
 }
 
 static bool read_packet(vpn_packet_t *packet) {
-	int lenin;
+	int inlen;
 
 	switch(device_type) {
 	case DEVICE_TYPE_TUN:
-		lenin = read(device_fd, packet->data + 10, MTU - 10);
+		inlen = read(device_fd, DATA(packet) + 10, MTU - 10);
 
-		if(lenin <= 0) {
-			logger(LOG_ERR, "Error while reading from %s %s: %s",
+		if(inlen <= 0) {
+			logger(DEBUG_ALWAYS, LOG_ERR, "Error while reading from %s %s: %s",
 			       device_info, device, strerror(errno));
+
+			if(errno == EBADFD) {  /* File descriptor in bad state */
+				event_exit();
+			}
+
 			return false;
 		}
 
-		memset(packet->data, 0, 12);
-		packet->len = lenin + 10;
+		memset(DATA(packet), 0, 12);
+		packet->len = inlen + 10;
 		break;
 
 	case DEVICE_TYPE_TAP:
-		lenin = read(device_fd, packet->data, MTU);
+		inlen = read(device_fd, DATA(packet), MTU);
 
-		if(lenin <= 0) {
-			logger(LOG_ERR, "Error while reading from %s %s: %s",
+		if(inlen <= 0) {
+			logger(DEBUG_ALWAYS, LOG_ERR, "Error while reading from %s %s: %s",
 			       device_info, device, strerror(errno));
 			return false;
 		}
 
-		packet->len = lenin;
+		packet->len = inlen;
 		break;
 
-	case DEVICE_TYPE_ETHERTAP:
-		lenin = read(device_fd, packet->data - 2, MTU + 2);
-
-		if(lenin <= 0) {
-			logger(LOG_ERR, "Error while reading from %s %s: %s",
-			       device_info, device, strerror(errno));
-			return false;
-		}
-
-		packet->len = lenin - 2;
-		break;
+	default:
+		abort();
 	}
 
-	device_total_in += packet->len;
-
-	ifdebug(TRAFFIC) logger(LOG_DEBUG, "Read packet of %d bytes from %s", packet->len,
-	                        device_info);
+	logger(DEBUG_TRAFFIC, LOG_DEBUG, "Read packet of %d bytes from %s", packet->len,
+	       device_info);
 
 	return true;
 }
 
 static bool write_packet(vpn_packet_t *packet) {
-	ifdebug(TRAFFIC) logger(LOG_DEBUG, "Writing packet of %d bytes to %s",
-	                        packet->len, device_info);
+	logger(DEBUG_TRAFFIC, LOG_DEBUG, "Writing packet of %d bytes to %s",
+	       packet->len, device_info);
 
 	switch(device_type) {
 	case DEVICE_TYPE_TUN:
-		packet->data[10] = packet->data[11] = 0;
+		DATA(packet)[10] = DATA(packet)[11] = 0;
 
-		if(write(device_fd, packet->data + 10, packet->len - 10) < 0) {
-			logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device,
+		if(write(device_fd, DATA(packet) + 10, packet->len - 10) < 0) {
+			logger(DEBUG_ALWAYS, LOG_ERR, "Can't write to %s %s: %s", device_info, device,
 			       strerror(errno));
 			return false;
 		}
@@ -231,35 +205,19 @@ static bool write_packet(vpn_packet_t *packet) {
 		break;
 
 	case DEVICE_TYPE_TAP:
-		if(write(device_fd, packet->data, packet->len) < 0) {
-			logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device,
+		if(write(device_fd, DATA(packet), packet->len) < 0) {
+			logger(DEBUG_ALWAYS, LOG_ERR, "Can't write to %s %s: %s", device_info, device,
 			       strerror(errno));
 			return false;
 		}
 
 		break;
 
-	case DEVICE_TYPE_ETHERTAP:
-		memcpy(packet->data - 2, &packet->len, 2);
-
-		if(write(device_fd, packet->data - 2, packet->len + 2) < 0) {
-			logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device,
-			       strerror(errno));
-			return false;
-		}
-
-		break;
+	default:
+		abort();
 	}
 
-	device_total_out += packet->len;
-
 	return true;
-}
-
-static void dump_device_stats(void) {
-	logger(LOG_DEBUG, "Statistics for %s %s:", device_info, device);
-	logger(LOG_DEBUG, " total bytes in:  %10"PRIu64, device_total_in);
-	logger(LOG_DEBUG, " total bytes out: %10"PRIu64, device_total_out);
 }
 
 const devops_t os_devops = {
@@ -267,5 +225,4 @@ const devops_t os_devops = {
 	.close = close_device,
 	.read = read_packet,
 	.write = write_packet,
-	.dump_stats = dump_device_stats,
 };

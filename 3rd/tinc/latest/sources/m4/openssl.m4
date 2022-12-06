@@ -35,7 +35,7 @@ AC_DEFUN([tinc_OPENSSL],
      LDFLAGS="$LDFLAGS -L$withval"]
   )
 
-  AC_CHECK_HEADERS(openssl/evp.h openssl/rsa.h openssl/rand.h openssl/err.h openssl/sha.h openssl/pem.h openssl/engine.h,
+  AC_CHECK_HEADERS([openssl/evp.h openssl/rsa.h openssl/rand.h openssl/err.h openssl/sha.h openssl/pem.h openssl/engine.h],
     [],
     [AC_MSG_ERROR([LibreSSL/OpenSSL header files not found.]); break]
   )
@@ -54,5 +54,6 @@ AC_DEFUN([tinc_OPENSSL],
     [#include <openssl/evp.h>]
   )
 
-  AC_CHECK_FUNCS([BN_GENCB_new RSA_set0_key], , , [#include <openssl/rsa.h>])
+  AC_CHECK_FUNCS([BN_GENCB_new ERR_remove_state RSA_set0_key], , , [#include <openssl/rsa.h>])
+  AC_CHECK_FUNCS([HMAC_CTX_new], , , [#include <openssl/hmac.h>])
 ])

@@ -1,7 +1,7 @@
 /*
     device.c -- multicast socket
     Copyright (C) 2002-2005 Ivo Timmermans,
-                  2002-2014 Guus Sliepen <guus@tinc-vpn.org>
+                  2002-2013 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,14 +31,11 @@
 
 static const char *device_info = "multicast socket";
 
-static uint64_t device_total_in = 0;
-static uint64_t device_total_out = 0;
-
 static struct addrinfo *ai = NULL;
-static mac_t ignore_src = {{0}};
+static mac_t ignore_src = {0};
 
 static bool setup_device(void) {
-	char *host;
+	char *host = NULL;
 	char *port;
 	char *space;
 	int ttl = 1;
@@ -46,17 +43,16 @@ static bool setup_device(void) {
 	get_config_string(lookup_config(config_tree, "Interface"), &iface);
 
 	if(!get_config_string(lookup_config(config_tree, "Device"), &device)) {
-		logger(LOG_ERR, "Device variable required for %s", device_info);
-		return false;
+		logger(DEBUG_ALWAYS, LOG_ERR, "Device variable required for %s", device_info);
+		goto error;
 	}
 
 	host = xstrdup(device);
 	space = strchr(host, ' ');
 
 	if(!space) {
-		logger(LOG_ERR, "Port number required for %s", device_info);
-		free(host);
-		return false;
+		logger(DEBUG_ALWAYS, LOG_ERR, "Port number required for %s", device_info);
+		goto error;
 	}
 
 	*space++ = 0;
@@ -71,16 +67,14 @@ static bool setup_device(void) {
 	ai = str2addrinfo(host, port, SOCK_DGRAM);
 
 	if(!ai) {
-		free(host);
-		return false;
+		goto error;
 	}
 
 	device_fd = socket(ai->ai_family, SOCK_DGRAM, IPPROTO_UDP);
 
 	if(device_fd < 0) {
-		logger(LOG_ERR, "Creating socket failed: %s", sockstrerror(sockerrno));
-		free(host);
-		return false;
+		logger(DEBUG_ALWAYS, LOG_ERR, "Creating socket failed: %s", sockstrerror(sockerrno));
+		goto error;
 	}
 
 #ifdef FD_CLOEXEC
@@ -91,10 +85,8 @@ static bool setup_device(void) {
 	setsockopt(device_fd, SOL_SOCKET, SO_REUSEADDR, (void *)&one, sizeof(one));
 
 	if(bind(device_fd, ai->ai_addr, ai->ai_addrlen)) {
-		closesocket(device_fd);
-		logger(LOG_ERR, "Can't bind to %s %s: %s", host, port, sockstrerror(sockerrno));
-		free(host);
-		return false;
+		logger(DEBUG_ALWAYS, LOG_ERR, "Can't bind to %s %s: %s", host, port, sockstrerror(sockerrno));
+		goto error;
 	}
 
 	switch(ai->ai_family) {
@@ -108,10 +100,8 @@ static bool setup_device(void) {
 		mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
 		if(setsockopt(device_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *)&mreq, sizeof(mreq))) {
-			logger(LOG_ERR, "Cannot join multicast group %s %s: %s", host, port, sockstrerror(sockerrno));
-			closesocket(device_fd);
-			free(host);
-			return false;
+			logger(DEBUG_ALWAYS, LOG_ERR, "Cannot join multicast group %s %s: %s", host, port, sockstrerror(sockerrno));
+			goto error;
 		}
 
 #ifdef IP_MULTICAST_LOOP
@@ -134,10 +124,8 @@ static bool setup_device(void) {
 		mreq.ipv6mr_interface = in6.sin6_scope_id;
 
 		if(setsockopt(device_fd, IPPROTO_IPV6, IPV6_JOIN_GROUP, (void *)&mreq, sizeof(mreq))) {
-			logger(LOG_ERR, "Cannot join multicast group %s %s: %s", host, port, sockstrerror(sockerrno));
-			closesocket(device_fd);
-			free(host);
-			return false;
+			logger(DEBUG_ALWAYS, LOG_ERR, "Cannot join multicast group %s %s: %s", host, port, sockstrerror(sockerrno));
+			goto error;
 		}
 
 #ifdef IPV6_MULTICAST_LOOP
@@ -151,75 +139,81 @@ static bool setup_device(void) {
 #endif
 
 	default:
-		logger(LOG_ERR, "Multicast for address family %x unsupported", ai->ai_family);
-		closesocket(device_fd);
-		free(host);
-		return false;
+		logger(DEBUG_ALWAYS, LOG_ERR, "Multicast for address family %x unsupported", ai->ai_family);
+		goto error;
 	}
 
-	free(host);
-	logger(LOG_INFO, "%s is a %s", device, device_info);
+	logger(DEBUG_ALWAYS, LOG_INFO, "%s is a %s", device, device_info);
 
 	return true;
-}
 
-static void close_device(void) {
-	close(device_fd);
+error:
 
-	free(device);
-	free(iface);
+	if(device_fd >= 0) {
+		closesocket(device_fd);
+	}
 
 	if(ai) {
 		freeaddrinfo(ai);
 	}
+
+	free(host);
+
+	return false;
+}
+
+static void close_device(void) {
+	close(device_fd);
+	device_fd = -1;
+
+	free(device);
+	device = NULL;
+	free(iface);
+	iface = NULL;
+
+	if(ai) {
+		freeaddrinfo(ai);
+		ai = NULL;
+	}
+
+	device_info = NULL;
 }
 
 static bool read_packet(vpn_packet_t *packet) {
 	int lenin;
 
-	if((lenin = recv(device_fd, (void *)packet->data, MTU, 0)) <= 0) {
-		logger(LOG_ERR, "Error while reading from %s %s: %s", device_info,
-		       device, strerror(errno));
+	if((lenin = recv(device_fd, (void *)DATA(packet), MTU, 0)) <= 0) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "Error while reading from %s %s: %s", device_info,
+		       device, sockstrerror(sockerrno));
 		return false;
 	}
 
-	if(!memcmp(&ignore_src, packet->data + 6, sizeof(ignore_src))) {
-		ifdebug(SCARY_THINGS) logger(LOG_DEBUG, "Ignoring loopback packet of %d bytes from %s", lenin, device_info);
-		packet->len = 0;
-		return true;
+	if(!memcmp(&ignore_src, DATA(packet) + 6, sizeof(ignore_src))) {
+		logger(DEBUG_SCARY_THINGS, LOG_DEBUG, "Ignoring loopback packet of %d bytes from %s", lenin, device_info);
+		return false;
 	}
 
 	packet->len = lenin;
 
-	device_total_in += packet->len;
-
-	ifdebug(TRAFFIC) logger(LOG_DEBUG, "Read packet of %d bytes from %s", packet->len,
-	                        device_info);
+	logger(DEBUG_TRAFFIC, LOG_DEBUG, "Read packet of %d bytes from %s", packet->len,
+	       device_info);
 
 	return true;
 }
 
 static bool write_packet(vpn_packet_t *packet) {
-	ifdebug(TRAFFIC) logger(LOG_DEBUG, "Writing packet of %d bytes to %s",
-	                        packet->len, device_info);
+	logger(DEBUG_TRAFFIC, LOG_DEBUG, "Writing packet of %d bytes to %s",
+	       packet->len, device_info);
 
-	if(sendto(device_fd, (void *)packet->data, packet->len, 0, ai->ai_addr, ai->ai_addrlen) < 0) {
-		logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device,
-		       strerror(errno));
+	if(sendto(device_fd, (void *)DATA(packet), packet->len, 0, ai->ai_addr, ai->ai_addrlen) < 0) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "Can't write to %s %s: %s", device_info, device,
+		       sockstrerror(sockerrno));
 		return false;
 	}
 
-	device_total_out += packet->len;
-
-	memcpy(&ignore_src, packet->data + 6, sizeof(ignore_src));
+	memcpy(&ignore_src, DATA(packet) + 6, sizeof(ignore_src));
 
 	return true;
-}
-
-static void dump_device_stats(void) {
-	logger(LOG_DEBUG, "Statistics for %s %s:", device_info, device);
-	logger(LOG_DEBUG, " total bytes in:  %10"PRIu64, device_total_in);
-	logger(LOG_DEBUG, " total bytes out: %10"PRIu64, device_total_out);
 }
 
 const devops_t multicast_devops = {
@@ -227,21 +221,4 @@ const devops_t multicast_devops = {
 	.close = close_device,
 	.read = read_packet,
 	.write = write_packet,
-	.dump_stats = dump_device_stats,
 };
-
-#if 0
-
-static bool not_supported(void) {
-	logger(LOG_ERR, "Raw socket device not supported on this platform");
-	return false;
-}
-
-const devops_t multicast_devops = {
-	.setup = not_supported,
-	.close = NULL,
-	.read = NULL,
-	.write = NULL,
-	.dump_stats = NULL,
-};
-#endif

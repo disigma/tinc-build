@@ -1,6 +1,6 @@
 /*
     connection.c -- connection list management
-    Copyright (C) 2000-2016 Guus Sliepen <guus@tinc-vpn.org>,
+    Copyright (C) 2000-2013 Guus Sliepen <guus@tinc-vpn.org>,
                   2000-2005 Ivo Timmermans
                   2008      Max Rijevski <maksuf@gmail.com>
 
@@ -21,100 +21,68 @@
 
 #include "system.h"
 
-#include "avl_tree.h"
+#include "list.h"
+#include "cipher.h"
 #include "conf.h"
+#include "control_common.h"
+#include "list.h"
 #include "logger.h"
+#include "net.h"
+#include "rsa.h"
 #include "subnet.h"
 #include "utils.h"
 #include "xalloc.h"
 
-avl_tree_t *connection_tree;    /* Meta connections */
+list_t *connection_list;
 connection_t *everyone;
 
-static int connection_compare(const connection_t *a, const connection_t *b) {
-	return a < b ? -1 : a == b ? 0 : 1;
-}
-
 void init_connections(void) {
-	connection_tree = avl_alloc_tree((avl_compare_t) connection_compare, (avl_action_t) free_connection);
+	connection_list = list_alloc((list_action_t) free_connection);
 	everyone = new_connection();
 	everyone->name = xstrdup("everyone");
 	everyone->hostname = xstrdup("BROADCAST");
 }
 
 void exit_connections(void) {
-	avl_delete_tree(connection_tree);
+	list_delete_list(connection_list);
 	free_connection(everyone);
 }
 
 connection_t *new_connection(void) {
-	connection_t *c;
-
-	c = xmalloc_and_zero(sizeof(connection_t));
-
-	if(!c) {
-		return NULL;
-	}
-
-	gettimeofday(&c->start, NULL);
-
-	return c;
-}
-
-void free_connection_partially(connection_t *c) {
-	free(c->inkey);
-	free(c->outkey);
-	free(c->mychallenge);
-	free(c->hischallenge);
-	free(c->outbuf);
-
-	c->inkey = NULL;
-	c->outkey = NULL;
-	c->mychallenge = NULL;
-	c->hischallenge = NULL;
-	c->outbuf = NULL;
-
-	c->status.pinged = false;
-	c->status.active = false;
-	c->status.connecting = false;
-	c->status.timeout = false;
-	c->status.encryptout = false;
-	c->status.decryptin = false;
-	c->status.mst = false;
-
-	c->options = 0;
-	c->buflen = 0;
-	c->reqlen = 0;
-	c->tcplen = 0;
-	c->allow_request = 0;
-	c->outbuflen = 0;
-	c->outbufsize = 0;
-	c->outbufstart = 0;
-	c->last_ping_time = 0;
-	c->last_flushed_time = 0;
-	c->inbudget = 0;
-	c->outbudget = 0;
-
-	if(c->inctx) {
-		EVP_CIPHER_CTX_reset(c->inctx);
-		free(c->inctx);
-		c->inctx = NULL;
-	}
-
-	if(c->outctx) {
-		EVP_CIPHER_CTX_reset(c->outctx);
-		free(c->outctx);
-		c->outctx = NULL;
-	}
-
-	if(c->rsa_key) {
-		RSA_free(c->rsa_key);
-		c->rsa_key = NULL;
-	}
+	return xzalloc(sizeof(connection_t));
 }
 
 void free_connection(connection_t *c) {
-	free_connection_partially(c);
+	if(!c) {
+		return;
+	}
+
+#ifndef DISABLE_LEGACY
+	cipher_close(c->incipher);
+	digest_close(c->indigest);
+	cipher_close(c->outcipher);
+	digest_close(c->outdigest);
+	rsa_free(c->rsa);
+#endif
+
+	sptps_stop(&c->sptps);
+	ecdsa_free(c->ecdsa);
+
+	free(c->hischallenge);
+	free(c->mychallenge);
+
+	buffer_clear(&c->inbuf);
+	buffer_clear(&c->outbuf);
+
+	io_del(&c->io);
+
+	if(c->socket > 0) {
+		if(c->status.tarpit) {
+			tarpit(c->socket);
+		} else {
+			closesocket(c->socket);
+		}
+	}
 
 	free(c->name);
 	free(c->hostname);
@@ -127,25 +95,20 @@ void free_connection(connection_t *c) {
 }
 
 void connection_add(connection_t *c) {
-	avl_insert(connection_tree, c);
+	list_insert_tail(connection_list, c);
 }
 
 void connection_del(connection_t *c) {
-	avl_delete(connection_tree, c);
+	list_delete(connection_list, c);
 }
 
-void dump_connections(void) {
-	avl_node_t *node;
-	connection_t *c;
-
-	logger(LOG_DEBUG, "Connections:");
-
-	for(node = connection_tree->head; node; node = node->next) {
-		c = node->data;
-		logger(LOG_DEBUG, " %s at %s options %x socket %d status %04x outbuf %d/%d/%d",
-		       c->name, c->hostname, c->options, c->socket, bitfield_to_int(&c->status, sizeof(c->status)),
-		       c->outbufsize, c->outbufstart, c->outbuflen);
+bool dump_connections(connection_t *cdump) {
+	for list_each(connection_t, c, connection_list) {
+		send_request(cdump, "%d %d %s %s %x %d %x",
+		             CONTROL, REQ_DUMP_CONNECTIONS,
+		             c->name, c->hostname, c->options, c->socket,
+		             bitfield_to_int(&c->status, sizeof(c->status)));
 	}
 
-	logger(LOG_DEBUG, "End of connections.");
+	return send_request(cdump, "%d %d", CONTROL, REQ_DUMP_CONNECTIONS);
 }

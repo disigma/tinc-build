@@ -4,7 +4,7 @@
 /*
     utils.h -- header file for utils.c
     Copyright (C) 1999-2005 Ivo Timmermans
-                  2000-2014 Guus Sliepen <guus@tinc-vpn.org>
+                  2000-2013 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,30 +21,37 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-extern bool hex2bin(char *src, char *dst, int length);
-extern void bin2hex(char *src, char *dst, int length);
+extern size_t hex2bin(const char *src, void *dst, size_t length);
+extern size_t bin2hex(const void *src, char *dst, size_t length);
 
-#if defined(HAVE_MINGW) || defined(HAVE_CYGWIN)
-extern const char *winerror(int);
-#endif
+extern size_t b64encode(const void *src, char *dst, size_t length);
+extern size_t b64encode_urlsafe(const void *src, char *dst, size_t length);
+extern size_t b64decode(const char *src, void *dst, size_t length);
 
 #ifdef HAVE_MINGW
+extern const char *winerror(int);
 #define strerror(x) ((x)>0?strerror(x):winerror(GetLastError()))
 #define sockerrno WSAGetLastError()
 #define sockstrerror(x) winerror(x)
 #define sockwouldblock(x) ((x) == WSAEWOULDBLOCK || (x) == WSAEINTR)
 #define sockmsgsize(x) ((x) == WSAEMSGSIZE)
 #define sockinprogress(x) ((x) == WSAEINPROGRESS || (x) == WSAEWOULDBLOCK)
+#define sockinuse(x) ((x) == WSAEADDRINUSE)
+#define socknotconn(x) ((x) == WSAENOTCONN)
 #else
 #define sockerrno errno
 #define sockstrerror(x) strerror(x)
 #define sockwouldblock(x) ((x) == EWOULDBLOCK || (x) == EINTR)
 #define sockmsgsize(x) ((x) == EMSGSIZE)
 #define sockinprogress(x) ((x) == EINPROGRESS)
+#define sockinuse(x) ((x) == EADDRINUSE)
+#define socknotconn(x) ((x) == ENOTCONN)
 #endif
 
 extern unsigned int bitfield_to_int(const void *bitfield, size_t size);
 
-int memcmp_constant_time(const void *a, const void *b, size_t size);
+extern bool check_id(const char *id);
+extern bool check_netname(const char *netname, bool strict);
+char *replace_name(const char *name);
 
 #endif

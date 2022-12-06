@@ -1,6 +1,6 @@
 /*
     device.c -- VDE plug
-    Copyright (C) 2012 Guus Sliepen <guus@tinc-vpn.org>
+    Copyright (C) 2013 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 #include "conf.h"
 #include "device.h"
+#include "names.h"
 #include "net.h"
 #include "logger.h"
 #include "utils.h"
@@ -35,17 +36,11 @@ static int port = 0;
 static char *group = NULL;
 static const char *device_info = "VDE socket";
 
-extern char *identname;
-extern volatile bool running;
-
-static uint64_t device_total_in = 0;
-static uint64_t device_total_out = 0;
-
 static bool setup_device(void) {
 	libvdeplug_dynopen(plug);
 
 	if(!plug.dl_handle) {
-		logger(LOG_ERR, "Could not open libvdeplug library!");
+		logger(DEBUG_ALWAYS, LOG_ERR, "Could not open libvdeplug library!");
 		return false;
 	}
 
@@ -68,7 +63,7 @@ static bool setup_device(void) {
 	conn = plug.vde_open(device, identname, &args);
 
 	if(!conn) {
-		logger(LOG_ERR, "Could not open VDE socket %s", device);
+		logger(DEBUG_ALWAYS, LOG_ERR, "Could not open VDE socket %s", device);
 		return false;
 	}
 
@@ -78,7 +73,7 @@ static bool setup_device(void) {
 	fcntl(device_fd, F_SETFD, FD_CLOEXEC);
 #endif
 
-	logger(LOG_INFO, "%s is a %s", device, device_info);
+	logger(DEBUG_ALWAYS, LOG_INFO, "%s is a %s", device, device_info);
 
 	if(routing_mode == RMODE_ROUTER) {
 		overwrite_mac = true;
@@ -90,6 +85,7 @@ static bool setup_device(void) {
 static void close_device(void) {
 	if(conn) {
 		plug.vde_close(conn);
+		conn = NULL;
 	}
 
 	if(plug.dl_handle) {
@@ -97,45 +93,41 @@ static void close_device(void) {
 	}
 
 	free(device);
+	device = NULL;
 
 	free(iface);
+	iface = NULL;
+
+	device_info = NULL;
 }
 
 static bool read_packet(vpn_packet_t *packet) {
-	int lenin = (ssize_t)plug.vde_recv(conn, packet->data, MTU, 0);
+	int lenin = (ssize_t)plug.vde_recv(conn, DATA(packet), MTU, 0);
 
 	if(lenin <= 0) {
-		logger(LOG_ERR, "Error while reading from %s %s: %s", device_info, device, strerror(errno));
-		running = false;
+		logger(DEBUG_ALWAYS, LOG_ERR, "Error while reading from %s %s: %s", device_info, device, strerror(errno));
+		event_exit();
 		return false;
 	}
 
 	packet->len = lenin;
-	device_total_in += packet->len;
-	ifdebug(TRAFFIC) logger(LOG_DEBUG, "Read packet of %d bytes from %s", packet->len, device_info);
+
+	logger(DEBUG_TRAFFIC, LOG_DEBUG, "Read packet of %d bytes from %s", packet->len, device_info);
 
 	return true;
 }
 
 static bool write_packet(vpn_packet_t *packet) {
-	if((ssize_t)plug.vde_send(conn, packet->data, packet->len, 0) < 0) {
+	if((ssize_t)plug.vde_send(conn, DATA(packet), packet->len, 0) < 0) {
 		if(errno != EINTR && errno != EAGAIN) {
-			logger(LOG_ERR, "Can't write to %s %s: %s", device_info, device, strerror(errno));
-			running = false;
+			logger(DEBUG_ALWAYS, LOG_ERR, "Can't write to %s %s: %s", device_info, device, strerror(errno));
+			event_exit();
 		}
 
 		return false;
 	}
 
-	device_total_out += packet->len;
-
 	return true;
-}
-
-static void dump_device_stats(void) {
-	logger(LOG_DEBUG, "Statistics for %s %s:", device_info, device);
-	logger(LOG_DEBUG, " total bytes in:  %10"PRIu64, device_total_in);
-	logger(LOG_DEBUG, " total bytes out: %10"PRIu64, device_total_out);
 }
 
 const devops_t vde_devops = {
@@ -143,5 +135,4 @@ const devops_t vde_devops = {
 	.close = close_device,
 	.read = read_packet,
 	.write = write_packet,
-	.dump_stats = dump_device_stats,
 };

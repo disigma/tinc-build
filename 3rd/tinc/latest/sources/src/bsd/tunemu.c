@@ -45,9 +45,9 @@
 #define PPPIOCSFLAGS    _IOW('t', 89, int)
 #define PPPIOCSNPMODE   _IOW('t', 75, struct npioctl)
 #define PPPIOCATTCHAN   _IOW('t', 56, int)
-#define PPPIOCGCHAN             _IOR('t', 55, int)
+#define PPPIOCGCHAN     _IOR('t', 55, int)
 #define PPPIOCCONNECT   _IOW('t', 58, int)
-#define PPPIOCGUNIT             _IOR('t', 86, int)
+#define PPPIOCGUNIT     _IOR('t', 86, int)
 
 struct sockaddr_ppp {
 	u_int8_t ppp_len;
@@ -83,7 +83,7 @@ static char *data_buffer = NULL;
 static void tun_error(char *format, ...) {
 	va_list vl;
 	va_start(vl, format);
-	vsnprintf(tunemu_error, ERROR_BUFFER_SIZE, format, vl);
+	vsnprintf(tunemu_error, sizeof(tunemu_error), format, vl);
 	va_end(vl);
 }
 

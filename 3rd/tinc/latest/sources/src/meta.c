@@ -1,6 +1,6 @@
 /*
     meta.c -- handle the meta communication
-    Copyright (C) 2000-2017 Guus Sliepen <guus@tinc-vpn.org>,
+    Copyright (C) 2000-2018 Guus Sliepen <guus@tinc-vpn.org>,
                   2000-2005 Ivo Timmermans
                   2006      Scott Lamb <slamb@slamb.org>
 
@@ -21,125 +21,149 @@
 
 #include "system.h"
 
-#include <openssl/err.h>
-#include <openssl/evp.h>
-
-#include "avl_tree.h"
+#include "cipher.h"
 #include "connection.h"
 #include "logger.h"
 #include "meta.h"
 #include "net.h"
 #include "protocol.h"
-#include "proxy.h"
 #include "utils.h"
 #include "xalloc.h"
 
-bool send_meta(connection_t *c, const char *buffer, int length) {
-	int outlen;
-	int result;
+#ifndef MIN
+static ssize_t MIN(ssize_t x, ssize_t y) {
+	return x < y ? x : y;
+}
+#endif
 
-	ifdebug(META) logger(LOG_DEBUG, "Sending %d bytes of metadata to %s (%s)", length,
-	                     c->name, c->hostname);
+bool send_meta_sptps(void *handle, uint8_t type, const void *buffer, size_t length) {
+	(void)type;
+	connection_t *c = handle;
 
-	if(!c->outbuflen) {
-		c->last_flushed_time = now;
+	if(!c) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "send_meta_sptps() called with NULL pointer!");
+		abort();
 	}
 
-	/* Find room in connection's buffer */
-	if(length + c->outbuflen > c->outbufsize) {
-		c->outbufsize = length + c->outbuflen;
-		c->outbuf = xrealloc(c->outbuf, c->outbufsize);
+	buffer_add(&c->outbuf, buffer, length);
+	io_set(&c->io, IO_READ | IO_WRITE);
+
+	return true;
+}
+
+bool send_meta(connection_t *c, const char *buffer, size_t length) {
+	if(!c) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "send_meta() called with NULL pointer!");
+		abort();
 	}
 
-	if(length + c->outbuflen + c->outbufstart > c->outbufsize) {
-		memmove(c->outbuf, c->outbuf + c->outbufstart, c->outbuflen);
-		c->outbufstart = 0;
+	logger(DEBUG_META, LOG_DEBUG, "Sending %lu bytes of metadata to %s (%s)", (unsigned long)length,
+	       c->name, c->hostname);
+
+	if(c->protocol_minor >= 2) {
+		return sptps_send_record(&c->sptps, 0, buffer, length);
 	}
 
 	/* Add our data to buffer */
 	if(c->status.encryptout) {
-		/* Check encryption limits */
-		if((uint64_t)length > c->outbudget) {
-			ifdebug(META) logger(LOG_ERR, "Byte limit exceeded for encryption to %s (%s)", c->name, c->hostname);
+#ifdef DISABLE_LEGACY
+		return false;
+#else
+
+		if(length > c->outbudget) {
+			logger(DEBUG_META, LOG_ERR, "Byte limit exceeded for encryption to %s (%s)", c->name, c->hostname);
 			return false;
 		} else {
 			c->outbudget -= length;
 		}
 
-		result = EVP_EncryptUpdate(c->outctx, (unsigned char *)c->outbuf + c->outbufstart + c->outbuflen,
-		                           &outlen, (unsigned char *)buffer, length);
+		size_t outlen = length;
 
-		if(!result || outlen < length) {
-			logger(LOG_ERR, "Error while encrypting metadata to %s (%s): %s",
-			       c->name, c->hostname, ERR_error_string(ERR_get_error(), NULL));
+		if(!cipher_encrypt(c->outcipher, buffer, length, buffer_prepare(&c->outbuf, length), &outlen, false) || outlen != length) {
+			logger(DEBUG_ALWAYS, LOG_ERR, "Error while encrypting metadata to %s (%s)",
+			       c->name, c->hostname);
 			return false;
-		} else if(outlen > length) {
-			logger(LOG_EMERG, "Encrypted data too long! Heap corrupted!");
-			abort();
 		}
 
-		c->outbuflen += outlen;
+#endif
 	} else {
-		memcpy(c->outbuf + c->outbufstart + c->outbuflen, buffer, length);
-		c->outbuflen += length;
+		buffer_add(&c->outbuf, buffer, length);
 	}
+
+	io_set(&c->io, IO_READ | IO_WRITE);
 
 	return true;
 }
 
-bool flush_meta(connection_t *c) {
-	int result;
-
-	ifdebug(META) logger(LOG_DEBUG, "Flushing %d bytes to %s (%s)",
-	                     c->outbuflen, c->name, c->hostname);
-
-	while(c->outbuflen) {
-		result = send(c->socket, c->outbuf + c->outbufstart, c->outbuflen, 0);
-
-		if(result <= 0) {
-			if(!errno || errno == EPIPE) {
-				ifdebug(CONNECTIONS) logger(LOG_NOTICE, "Connection closed by %s (%s)",
-				                            c->name, c->hostname);
-			} else if(errno == EINTR) {
-				continue;
-			} else if(sockwouldblock(sockerrno)) {
-				ifdebug(META) logger(LOG_DEBUG, "Flushing %d bytes to %s (%s) would block",
-				                     c->outbuflen, c->name, c->hostname);
-				return true;
-			} else {
-				logger(LOG_ERR, "Flushing meta data to %s (%s) failed: %s", c->name,
-				       c->hostname, sockstrerror(sockerrno));
-			}
-
-			return false;
-		}
-
-		c->outbufstart += result;
-		c->outbuflen -= result;
+void send_meta_raw(connection_t *c, const char *buffer, size_t length) {
+	if(!c) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "send_meta() called with NULL pointer!");
+		abort();
 	}
 
-	c->outbufstart = 0; /* avoid unnecessary memmoves */
-	return true;
+	logger(DEBUG_META, LOG_DEBUG, "Sending %lu bytes of raw metadata to %s (%s)", (unsigned long)length,
+	       c->name, c->hostname);
+
+	buffer_add(&c->outbuf, buffer, length);
+
+	io_set(&c->io, IO_READ | IO_WRITE);
 }
 
-void broadcast_meta(connection_t *from, const char *buffer, int length) {
-	avl_node_t *node;
-	connection_t *c;
-
-	for(node = connection_tree->head; node; node = node->next) {
-		c = node->data;
-
-		if(c != from && c->status.active) {
+void broadcast_meta(connection_t *from, const char *buffer, size_t length) {
+	for list_each(connection_t, c, connection_list)
+		if(c != from && c->edge) {
 			send_meta(c, buffer, length);
 		}
+}
+
+bool receive_meta_sptps(void *handle, uint8_t type, const void *vdata, uint16_t length) {
+	const char *data = vdata;
+	connection_t *c = handle;
+
+	if(!c) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "receive_meta_sptps() called with NULL pointer!");
+		abort();
 	}
+
+	if(type == SPTPS_HANDSHAKE) {
+		if(c->allow_request == ACK) {
+			return send_ack(c);
+		} else {
+			return true;
+		}
+	}
+
+	if(!data) {
+		return true;
+	}
+
+	/* Are we receiving a TCPpacket? */
+
+	if(c->tcplen) {
+		if(length != c->tcplen) {
+			return false;
+		}
+
+		receive_tcppacket(c, data, length);
+		c->tcplen = 0;
+		return true;
+	}
+
+	/* Change newline to null byte, just like non-SPTPS requests */
+
+	if(data[length - 1] == '\n') {
+		((char *)data)[length - 1] = 0;
+	}
+
+	/* Otherwise we are waiting for a request */
+
+	return receive_request(c, data);
 }
 
 bool receive_meta(connection_t *c) {
-	int oldlen, i, result;
-	int lenin, lenout, reqlen;
-	bool decrypted = false;
+	ssize_t inlen;
 	char inbuf[MAXBUFSIZE];
+	char *bufp = inbuf, *endp;
 
 	/* Strategy:
 	   - Read as much as possible from the TCP socket in one go.
@@ -150,109 +174,174 @@ bool receive_meta(connection_t *c) {
 	   - If not, keep stuff in buffer and exit.
 	 */
 
-	lenin = recv(c->socket, c->buffer + c->buflen, MAXBUFSIZE - c->buflen, 0);
+	buffer_compact(&c->inbuf, MAXBUFSIZE);
 
-	if(lenin <= 0) {
-		if(!lenin || !errno) {
-			ifdebug(CONNECTIONS) logger(LOG_NOTICE, "Connection closed by %s (%s)",
-			                            c->name, c->hostname);
+	if(sizeof(inbuf) <= c->inbuf.len) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "Input buffer full for %s (%s)", c->name, c->hostname);
+		return false;
+	}
+
+	inlen = recv(c->socket, inbuf, sizeof(inbuf) - c->inbuf.len, 0);
+
+	if(inlen <= 0) {
+		if(!inlen || !sockerrno) {
+			logger(DEBUG_CONNECTIONS, LOG_NOTICE, "Connection closed by %s (%s)",
+			       c->name, c->hostname);
 		} else if(sockwouldblock(sockerrno)) {
 			return true;
 		} else
-			logger(LOG_ERR, "Metadata socket read error for %s (%s): %s",
+			logger(DEBUG_ALWAYS, LOG_ERR, "Metadata socket read error for %s (%s): %s",
 			       c->name, c->hostname, sockstrerror(sockerrno));
 
 		return false;
 	}
 
-	oldlen = c->buflen;
-	c->buflen += lenin;
+	do {
+		/* Are we receiving a SPTPS packet? */
 
-	while(lenin > 0) {
-		reqlen = 0;
+		if(c->sptpslen) {
+			ssize_t len = MIN(inlen, c->sptpslen - c->inbuf.len);
+			buffer_add(&c->inbuf, bufp, len);
 
-		/* Is it proxy metadata? */
+			char *sptpspacket = buffer_read(&c->inbuf, c->sptpslen);
 
-		if(c->allow_request == PROXY) {
-			reqlen = receive_proxy_meta(c);
+			if(!sptpspacket) {
+				return true;
+			}
 
-			if(reqlen < 0) {
+			if(!receive_tcppacket_sptps(c, sptpspacket, c->sptpslen)) {
 				return false;
 			}
 
-			goto consume;
+			c->sptpslen = 0;
+
+			bufp += len;
+			inlen -= len;
+			continue;
 		}
 
-		/* Decrypt */
+		if(c->protocol_minor >= 2) {
+			size_t len = sptps_receive_data(&c->sptps, bufp, inlen);
 
-		if(c->status.decryptin && !decrypted) {
-			/* Check decryption limits */
-			if((uint64_t)lenin > c->inbudget) {
-				ifdebug(META) logger(LOG_ERR, "Byte limit exceeded for decryption from %s (%s)", c->name, c->hostname);
+			if(!len) {
+				return false;
+			}
+
+			bufp += len;
+			inlen -= len;
+			continue;
+		}
+
+		if(!c->status.decryptin) {
+			endp = memchr(bufp, '\n', inlen);
+
+			if(endp) {
+				endp++;
+			} else {
+				endp = bufp + inlen;
+			}
+
+			buffer_add(&c->inbuf, bufp, endp - bufp);
+
+			inlen -= endp - bufp;
+			bufp = endp;
+		} else {
+#ifdef DISABLE_LEGACY
+			return false;
+#else
+
+			if((size_t)inlen > c->inbudget) {
+				logger(DEBUG_META, LOG_ERR, "Byte limit exceeded for decryption from %s (%s)", c->name, c->hostname);
 				return false;
 			} else {
-				c->inbudget -= lenin;
+				c->inbudget -= inlen;
 			}
 
-			result = EVP_DecryptUpdate(c->inctx, (unsigned char *)inbuf, &lenout, (unsigned char *)c->buffer + oldlen, lenin);
+			size_t outlen = inlen;
 
-			if(!result || lenout != lenin) {
-				logger(LOG_ERR, "Error while decrypting metadata from %s (%s): %s",
-				       c->name, c->hostname, ERR_error_string(ERR_get_error(), NULL));
+			if(!cipher_decrypt(c->incipher, bufp, inlen, buffer_prepare(&c->inbuf, inlen), &outlen, false) || (size_t)inlen != outlen) {
+				logger(DEBUG_ALWAYS, LOG_ERR, "Error while decrypting metadata from %s (%s)",
+				       c->name, c->hostname);
 				return false;
 			}
 
-			memcpy(c->buffer + oldlen, inbuf, lenin);
-			decrypted = true;
+			inlen = 0;
+#endif
 		}
 
-		/* Are we receiving a TCPpacket? */
+		while(c->inbuf.len) {
+			/* Are we receiving a TCPpacket? */
 
-		if(c->tcplen) {
-			if(c->tcplen <= c->buflen) {
-				if(c->allow_request != ALL) {
-					logger(LOG_ERR, "Got unauthorized TCP packet from %s (%s)", c->name, c->hostname);
+			if(c->tcplen) {
+				char *tcpbuffer = buffer_read(&c->inbuf, c->tcplen);
+
+				if(!tcpbuffer) {
+					break;
+				}
+
+				if(!c->node) {
+					if(c->outgoing && proxytype == PROXY_SOCKS4 && c->allow_request == ID) {
+						if(tcpbuffer[0] == 0 && tcpbuffer[1] == 0x5a) {
+							logger(DEBUG_CONNECTIONS, LOG_DEBUG, "Proxy request granted");
+						} else {
+							logger(DEBUG_CONNECTIONS, LOG_ERR, "Proxy request rejected");
+							return false;
+						}
+					} else if(c->outgoing && proxytype == PROXY_SOCKS5 && c->allow_request == ID) {
+						if(tcpbuffer[0] != 5) {
+							logger(DEBUG_CONNECTIONS, LOG_ERR, "Invalid response from proxy server");
+							return false;
+						}
+
+						if(tcpbuffer[1] == (char)0xff) {
+							logger(DEBUG_CONNECTIONS, LOG_ERR, "Proxy request rejected: unsuitable authentication method");
+							return false;
+						}
+
+						if(tcpbuffer[2] != 5) {
+							logger(DEBUG_CONNECTIONS, LOG_ERR, "Invalid response from proxy server");
+							return false;
+						}
+
+						if(tcpbuffer[3] == 0) {
+							logger(DEBUG_CONNECTIONS, LOG_DEBUG, "Proxy request granted");
+						} else {
+							logger(DEBUG_CONNECTIONS, LOG_DEBUG, "Proxy request rejected");
+							return false;
+						}
+					} else {
+						logger(DEBUG_CONNECTIONS, LOG_ERR, "c->tcplen set but c->node is NULL!");
+						abort();
+					}
+				} else {
+					if(c->allow_request == ALL) {
+						receive_tcppacket(c, tcpbuffer, c->tcplen);
+					} else {
+						logger(DEBUG_CONNECTIONS, LOG_ERR, "Got unauthorized TCP packet from %s (%s)", c->name, c->hostname);
+						return false;
+					}
+				}
+
+				c->tcplen = 0;
+			}
+
+			/* Otherwise we are waiting for a request */
+
+			char *request = buffer_readline(&c->inbuf);
+
+			if(request) {
+				bool result = receive_request(c, request);
+
+				if(!result) {
 					return false;
 				}
 
-				receive_tcppacket(c, c->buffer, c->tcplen);
-				reqlen = c->tcplen;
-				c->tcplen = 0;
-			}
-		} else {
-			/* Otherwise we are waiting for a request */
-
-			for(i = oldlen; i < c->buflen; i++) {
-				if(c->buffer[i] == '\n') {
-					c->buffer[i] = '\0';    /* replace end-of-line by end-of-string so we can use sscanf */
-					c->reqlen = reqlen = i + 1;
-					break;
-				}
-			}
-
-			if(reqlen && !receive_request(c)) {
-				return false;
+				continue;
+			} else {
+				break;
 			}
 		}
-
-consume:
-
-		if(reqlen) {
-			c->buflen -= reqlen;
-			lenin -= reqlen - oldlen;
-			memmove(c->buffer, c->buffer + reqlen, c->buflen);
-			oldlen = 0;
-			continue;
-		} else {
-			break;
-		}
-	}
-
-	if(c->buflen >= MAXBUFSIZE) {
-		logger(LOG_ERR, "Metadata read buffer overflow for %s (%s)",
-		       c->name, c->hostname);
-		return false;
-	}
+	} while(inlen);
 
 	return true;
 }

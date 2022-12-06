@@ -1,6 +1,6 @@
 /*
     edge.c -- edge tree management
-    Copyright (C) 2000-2006 Guus Sliepen <guus@tinc-vpn.org>,
+    Copyright (C) 2000-2021 Guus Sliepen <guus@tinc-vpn.org>,
                   2000-2005 Ivo Timmermans
 
     This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,8 @@
 
 #include "system.h"
 
-#include "avl_tree.h"
+#include "splay_tree.h"
+#include "control_common.h"
 #include "edge.h"
 #include "logger.h"
 #include "netutl.h"
@@ -28,7 +29,7 @@
 #include "utils.h"
 #include "xalloc.h"
 
-avl_tree_t *edge_weight_tree;   /* Tree with all edges, sorted on weight */
+splay_tree_t *edge_weight_tree;
 
 static int edge_compare(const edge_t *a, const edge_t *b) {
 	return strcmp(a->to->name, b->to->name);
@@ -53,41 +54,54 @@ static int edge_weight_compare(const edge_t *a, const edge_t *b) {
 }
 
 void init_edges(void) {
-	edge_weight_tree = avl_alloc_tree((avl_compare_t) edge_weight_compare, NULL);
+	edge_weight_tree = splay_alloc_tree((splay_compare_t) edge_weight_compare, NULL);
 }
 
-avl_tree_t *new_edge_tree(void) {
-	return avl_alloc_tree((avl_compare_t) edge_compare, (avl_action_t) free_edge);
+splay_tree_t *new_edge_tree(void) {
+	return splay_alloc_tree((splay_compare_t) edge_compare, (splay_action_t) free_edge);
 }
 
-void free_edge_tree(avl_tree_t *edge_tree) {
-	avl_delete_tree(edge_tree);
+void free_edge_tree(splay_tree_t *edge_tree) {
+	splay_delete_tree(edge_tree);
 }
 
 void exit_edges(void) {
-	avl_delete_tree(edge_weight_tree);
+	splay_delete_tree(edge_weight_tree);
 }
 
 /* Creation and deletion of connection elements */
 
 edge_t *new_edge(void) {
-	return xmalloc_and_zero(sizeof(edge_t));
+	return xzalloc(sizeof(edge_t));
 }
 
 void free_edge(edge_t *e) {
 	sockaddrfree(&e->address);
+	sockaddrfree(&e->local_address);
 
 	free(e);
 }
 
 void edge_add(edge_t *e) {
-	avl_insert(edge_weight_tree, e);
-	avl_insert(e->from->edge_tree, e);
+	splay_node_t *node = splay_insert(e->from->edge_tree, e);
+
+	if(!node) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "Edge from %s to %s already exists in edge_tree\n", e->from->name, e->to->name);
+		return;
+	}
+
 
 	e->reverse = lookup_edge(e->to, e->from);
 
 	if(e->reverse) {
 		e->reverse->reverse = e;
+	}
+
+	node = splay_insert(edge_weight_tree, e);
+
+	if(!node) {
+		logger(DEBUG_ALWAYS, LOG_ERR, "Edge from %s to %s already exists in edge_weight_tree\n", e->from->name, e->to->name);
+		return;
 	}
 }
 
@@ -96,8 +110,8 @@ void edge_del(edge_t *e) {
 		e->reverse->reverse = NULL;
 	}
 
-	avl_delete(edge_weight_tree, e);
-	avl_delete(e->from->edge_tree, e);
+	splay_delete(edge_weight_tree, e);
+	splay_delete(e->from->edge_tree, e);
 }
 
 edge_t *lookup_edge(node_t *from, node_t *to) {
@@ -106,28 +120,22 @@ edge_t *lookup_edge(node_t *from, node_t *to) {
 	v.from = from;
 	v.to = to;
 
-	return avl_search(from->edge_tree, &v);
+	return splay_search(from->edge_tree, &v);
 }
 
-void dump_edges(void) {
-	avl_node_t *node, *node2;
-	node_t *n;
-	edge_t *e;
-	char *address;
-
-	logger(LOG_DEBUG, "Edges:");
-
-	for(node = node_tree->head; node; node = node->next) {
-		n = node->data;
-
-		for(node2 = n->edge_tree->head; node2; node2 = node2->next) {
-			e = node2->data;
-			address = sockaddr2hostname(&e->address);
-			logger(LOG_DEBUG, " %s to %s at %s options %x weight %d",
-			       e->from->name, e->to->name, address, e->options, e->weight);
+bool dump_edges(connection_t *c) {
+	for splay_each(node_t, n, node_tree) {
+		for splay_each(edge_t, e, n->edge_tree) {
+			char *address = sockaddr2hostname(&e->address);
+			char *local_address = sockaddr2hostname(&e->local_address);
+			send_request(c, "%d %d %s %s %s %s %x %d",
+			             CONTROL, REQ_DUMP_EDGES,
+			             e->from->name, e->to->name, address,
+			             local_address, e->options, e->weight);
 			free(address);
+			free(local_address);
 		}
 	}
 
-	logger(LOG_DEBUG, "End of edges.");
+	return send_request(c, "%d %d", CONTROL, REQ_DUMP_EDGES);
 }

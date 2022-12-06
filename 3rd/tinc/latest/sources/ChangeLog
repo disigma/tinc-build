@@ -1,217 +1,578 @@
-Version 1.0.36                                            August 26 2019
+Version 1.1pre18                                            June 27 2021
 ------------------------------------------------------------------------
 
-Guus Sliepen (8):
-      Remove the call to RAND_load_file().
+Guus Sliepen (39):
+      Fix the compiler attribute test to work with Clang.
+      Install the bash completion file when running make install.
+      Use the onlink flag when adding routes on Linux.
+      Check all Address statements when making outgoing connections.
+      Reformat the code using astyle.
+      Fix building with --disable-legacy-protocol.
+      Make more variables safe for use in invitations.
+      Allow "tinc --force join" to accept all variables sent in an invitaiton.
+      Skip the legacy protocol test if that protocol is disabled.
+      Fix warnings when compiling for Windows.
+      Fix compiling test binaries on Windows.
+      Drop support for Cygwin.
+      Make sure the stop command works on Windows if tincd is running in the foreground.
+      Prevent sptps_test from sending overly large UDP packets.
+      Attempt to make the test suite work with Windows executables.
+      Handle DOS line endings in invitation files.
+      Double-quote node names in dump graph output.
+      Fix the scripts test.
+      Prevent large amounts of UDP probes being sent consecutively.
+      Avoid void pointer arithmetic.
+      Disable AutoConnect in the ns-ping test.
+      Don't keep an address cache in an outgoing_t.
+      Try harder to connect to unreachable nodes.
+      Include stddef.h if available.
+      Fix segfault when failing to read random numbers.
+      Reformat the code using astyle.
+      Fix warnings from GCC about VLAs.
+      Fix warnings from autoconf.
+      Fix compiler warnings.
+      Don't compile support for Device=fd on platforms that do not support UNIX sockets.
+      Fix the check for sys/un.h.
+      Log errors when add_edge() fails to insert into the edge trees.
+      Fix for the event loop on Windows.
+      Don't try to forward packets to a node we don't have a key for.
+      Fix spelling errors.
+      Fix usage of @code and @samp commands.
+      Update copyright notices.
       Update THANKS.
-      Backport tinc 1.1's str2net() function.
-      Update THANKS.
-      Fix spelling errors found by codespell.
-      Reformat all code using astyle.
-      Add a missing check for a pathname being too long.
-      Releasing 1.0.36.
+      Releasing 1.1pre18.
 
-Rosen Penev (2):
-      Fix compilation when OpenSSL has no ENGINE support
-      Fix compilation without deprecated OpenSSL APIs
+Fabian Maurer (2):
+      Fix interface spelling
+      Generate tinc-up.bat on windows
 
-Quentin Rameau (1):
-      Double-quote nodes in graphviz network file
+Ilia Pavlikhin (2):
+      Fix infinity loop when network address and
+      Add Subnet checking to tinc cli
+
+Maciej S. Szmigiero (2):
+      Revert "Work around a GCC bug that causes inet_checksum() to give wrong results."
+      Fix strict aliasing violation in inet_checksum()
+
+pacien (2):
+      fd_device: allow fd to be passed through a unix socket
+      tincctl: restrict umask argument for FORTIFY
+
+Aaron LI (1):
+      Use auto-clone device /dev/{tun,tap} as default on FreeBSD/DragonFly
+
+Andreas Rammhold (1):
+      fix: use EVP_DecryptUpdate while decrypting
+
+Rosen Penev (1):
+      fix compilation without deprecated OpenSSL APIs
+
+Shengjing Zhu (1):
+      Fix manpage mdoc syntax
 
 Werner Schreiber (1):
       Fix segfault when dest->mtu is 0.
 
-Version 1.0.35                                           October 05 2018
+iczero (1):
+      Fix tinc-up generation on windows
+
+leptonyu (1):
+      fix macos build
+
+Version 1.1pre17                                         October 08 2018
 ------------------------------------------------------------------------
 
-Guus Sliepen (12):
-      Prevent oracle attacks (CVE-2018-16737, CVE-2018-16738)
-      Prevent a MITM from forcing a NULL cipher for UDP (CVE-2018-16758)
-      Check the return value from snprintf().
-      Check the return values from BN_hex2bn() and RAND_load_file().
+Guus Sliepen (17):
+      Remove the ping test.
+      Add missing item and attribution to NEWS.
+      Merge remote-tracking branch 'volth/release-1.1pre16-rtt' into 1.1
+      Print UDP RTT on its own line.
+      Avoid treating compressed MTU probes as having a negative length.
+      Remove address cache debug messages printed to stderr.
+      Enable AutoConnect by default.
+      Prevent oracle attacks in the legacy protocol (CVE-2018-16737, CVE-2018-16738)
+      Add a test for backwards compatibility with the legacy protocol.
+      Fix compiler warnings.
+      Fix warnings from the Clang static analyzer.
       Fix all warnings when compiling with -Wall -W -pedantic.
-      Fix two small memory leaks.
-      Don't check for NULL-pointers before calling free().
-      Update THANKS.
-      Fix checks for Cygwin-related macros.
       Fix spelling errors.
+      Don't check for NULL-pointers before calling free().
       Update README and links to required libraries.
-      Releasing 1.0.35.
+      Update THANKS.
+      Releasing 1.1pre17.
 
-AMRI Amine (1):
-      Fixing typo
+volth (3):
+      keep track of round trip times of UDP pings
+      expose traffic stats to 'tinc info ___' and 'tinc dump nodes'
+      minor
 
 Rafael Sadowski (1):
       OpenBSD has a proper tap device.
 
-Version 1.0.34                                              June 12 2018
+Version 1.1pre16                                            June 12 2018
 ------------------------------------------------------------------------
 
-Guus Sliepen (10):
-      Add missing thanks to the NEWS message.
-      Fix building documentation when using OpenBSD's make.
-      Fix #ifdefs that were broken due to commit d178b58.
-      Don't use SOL_IP and SOL_IPV6.
-      Make systemd service file handling identical to tinc 1.1.
-      Rename distro/ to systemd/.
-      Document how to enable tinc at boot time using systemd.
-      Fix all spelling errors found by codespell.
-      Properly implement tinc.texi's dependency on tincinclude.texi.
-      Releasing 1.0.34.
-
-Maximilian Stein (1):
-      Fix SEGFAULT when trying to connect to IPv6 peer in non-IPv6 environment
-
-wangliushuai (1):
-      Remove redundant 'break'.
-
-Version 1.0.33                                          November 04 2017
-------------------------------------------------------------------------
-
-Guus Sliepen (31):
-      Udpate THANKS.
-      Fix a potential memory leak.
-      Use AC_CONFIG_MACRO_DIR().
-      Give absolute path for #include to AC_CHECK_HEADERS().
+Guus Sliepen (54):
+      Update THANKS.
       Prepare for automatic code formatting using Artistic Style.
-      Never remove items from cmdline_conf.
-      Use stack-allocated strings for temporary filenames.
-      Fix a few minor memory leaks.
       Remove unused/obsolete checks from configure.ac.
-      Use getcwd() instead of get_current_dir_name().
-      Remove xmalloc.c, backport xalloc.h from tinc 1.1.
       Update all header guards.
       Convert sizeof foo to sizeof(foo).
       Reformat all code using astyle.
-      Don't call ERR_remove_state().
-      Unconditionally include stdbool.h and inttypes.h.
-      Remove more obsolete autoconf checks.
-      Remove obsolete m4/README.
-      Fix some "make distcheck" errors.
+      Ensure "make distcheck" really runs without errors.
       Add some information about the requirements of a chroot environment.
-      Handle tun/tap device returning EPERM or EBUSY.
       Disable PMTU discovery when TCPOnly is used.
-      Fix all -Wall -W compiler warnings.
-      Realign comments.
+      Only forward SPTPS packets if Forwarding = internal.
+      If we are using libncurses, also try to link with libtinfo.
+      Don't log errors when autoconnecting fails and debuglevel is 0.
       Remove unused functions.
       Ensure all parameters have names in header files.
       Support autoconf's --runstatedir option.
       Const correctness.
-      Fix compilation errors when --enable-uml is used.
       Update THANKS.
-      Releasing 1.0.33.
+      Fix building documentation when using OpenBSD's make.
+      Assume all IPPROTO_* macros exist.
+      Document the --batch option.
+      Don't warn about empty lines in invitation files.
+      Document that invitation files MUST always start with Name = ...
+      Add missing newlines to some error messages.
+      Merge remote-tracking branch 'dechamps/ipip' into 1.1
+      Remove hardcoded paths from systemd unit files.
+      Set default systemd unit path to ${libdir}/systemd/system.
+      Ensure the sptps-basic test doesn't fail during make distcheck.
+      Update .gitignore.
+      Don't include generated files into the tarball.
+      Document how to enable tinc at boot time using systemd.
+      Fix all spelling errors found by codespell.
+      Add a cache of recently seen addresses.
+      Fix calling freeaddrinfo() on the wrong pointer.
+      Reformat all code using astyle.
+      Add code coverage testing support.
+      Reduce memory allocations due to zlib's uncompress().
+      Reduce memory allocations due to HMAC() and EVP_MD_*().
+      Document the control protocol.
+      Update the documentation of the control protocol.
+      Unconditionally remove timeouts from the queue before calling the callback.
+      Revert "Unconditionally remove timeouts from the queue before calling the callback."
+      Work around a GCC bug that causes inet_checksum() to give wrong results.
+      Try to process all pending events after select().
+      Fix compatibility with LibreSSL and OpenSSL < 1.1.
+      Reformat all code using astyle.
+      Ensure we call CloseServiceHandle() in case of errors.
+      Warn if we cannot reload the tincd when creating an invitation.
+      Properly implement tinc.texi's dependency on tincinclude.texi.
+      Prevent an infinite loop in get_recent_address().
+      Fix invitation tests if port 655 is available.
+      Add the ability to set a firewall mark on sockets.
+      Reformat all code using astyle.
+      Remove the wxPython GUI.
+      Releasing 1.1pre16.
 
-Rafael Sadowski (1):
-      fix tinc.conf for OpenBSD
+Todd C. Miller (9):
+      Fix parsing of -b flag
+      Replace remaining sizeof foo with sizeof(foo).
+      Add some missing freeaddrinfo() calls to avoid leaking memory.
+      WSAEVENT is a pointer, so we cannot simply return the different of two
+      In device_issue_read() there is no need to reset Offset and OffsetHigh
+      Fix a use-after-free bug in get_recent_address() and two related issues.
+      Fix heap corruption on Windows exposed by the use-after free fix.
+      In device_handle_read() we need to reset the read event on error or
+      Call WSAWaitForMultipleEvents() in a loop until we have checked all events.
 
-nemunaire (1):
-      Allow compilation from a build directory
+Etienne Dechamps (5):
+      Support MSS clamping for IP in IP (RFC 2003) packets.
+      Fix AC_CHECK_DECLS usage in openssl.m4.
+      Fix "void function should not return void expression" warning.
+      Fix "use of GNU empty initializer extension" warning.
+      Move ResetEvent() call before ReadFile().
 
-Version 1.0.32                                         September 02 2017
+Daniel Lublin (1):
+      doc: there is, not their is
+
+Gjergji (1):
+      fix service removal.
+
+Mike Sullivan (1):
+      Fix handling partial SPTPS messages in sptps_test.
+
+Oliver Freyermuth (1):
+      Fix compiling when support for UML sockets is enabled.
+
+Version 1.1pre15                                       September 02 2017
 ------------------------------------------------------------------------
 
-Guus Sliepen (13):
-      Don't dereference myself->incipher if it's NULL.
-      Merge remote-tracking branch 'VittGam/master'
+Guus Sliepen (56):
+      Preserve IPv6 scope_id in edges.
+      Fix the previous commit.
+      Ensure compatibility with OpenSSL 1.1.0.
+      Add -Wall to CFLAGS.
+      Check return value of RSA_generate_key_ex().
+      Use EVP_MD_CTX_destroy() instead of _free().
+      Force nul-termination of strings after vsnprintf().
+      Fix warnings from the Clang static analyzer.
+      Fix potential memory leaks found by the Clang static analyzer.
+      Add missing m4 files.
+      Fix compiling with OpenSSL < 1.1.0.
+      Log warnings about dropped packets only with debug level 5 or higher.
+      Use AES256 and SHA256 by default for the legacy protocol.
+      Enforce maximum amount of bytes sent/received on meta-connections.
+      Fix potential segfault in the replacement vasprintf() function.
+      Don't build sptps_* binaries by default.
+      Remove the description of the LocalDiscoveryAddress option from the manual.
+      Use free_known_addresses() to free memory allocated by get_known_addresses().
+      Add missing #defines used by fd_device.c.
+      Don't try to use kill() on Windows.
+      Merge remote-tracking branch 'dechamps/sleep' into 1.1
+      Put script environment creation/deletion in functions.
+      Add DEBUG environment variable for scripts.
+      Use unique ports for all tests.
+      Remove superfluous sleep command in invite-join test.
+      Add the invite-offline test.
+      Update .gitignore.
+      Add the scripts test.
+      Ensure proper logging in the invite-offline test.
+      Use 127.0.0.1 instead of localhost to ensure tests are reproducible.
+      Ensure sptps_keypair and sptps_test get build for make check.
       Use /dev/udp instead of /dev/ip on Solaris.
       Use getmsg()/putmsg() instead of read()/write() on Solaris.
-      Fix Solaris DeviceType = tap in router Mode.
-      Bind outgoing TCP sockets.
+      Ensure tests compile on *BSD.
+      Make sure realname is always initialized.
+      Fix compiler warnings on *BSD.
+      Fix segfault when adding environment variables.
+      Fix tests on *BSD.
+      Add missing tinc stop command to the scripts test.
+      Remove dead stores.
+      Add field widths to sscanf() calls.
+      Fix some minor issues found by cppcheck.
+      Remove unused add_scalar function.
       Move logging of "would block" messages to debug level 4.
       Set KillMode=mixed in the systemd service file.
-      Don't forget about outgoing connections on host file read errors.
-      Fix Proxy = exec.
-      Set status.proxy_passed early for Proxy = exec.
-      Don't try to bind Proxy = exec sockets to an address.
-      Releasing 1.0.32.
+      Add configurable experation time for invitations.
+      Store the invitation data after a succesful join.
+      Forward-port tinc 1.0's handling of device errors.
+      Make autoconnect try to heal network splits.
+      Add missing break statements.
+      Force IPv4 for sptps-basic.test.
+      Fix a compiler warning.
+      Fix a file descriptor leak when using an invitation.
+      Ensure packet priority is cleared when sending PMTU probe replies.
+      Drop h and hh length modifiers from printf format strings.
+      Releasing 1.1pre15.
+
+Etienne Dechamps (7):
+      Fix error handling when setting up the UDP socket.
+      Fix crash on Windows when a socket is available for both write and read.
+      On Windows, don't cancel I/O when disabling the device.
+      Fix edge local addresses not being set when connections are established.
+      Fix edge updates containing local address changes.
+      Clarify the flow of add_edge_h().
+      Fix address memory leaks in add_edge_h().
+
+thorkill (4):
+      Send PKT_PROBE only when handshake has been done already.
+      Prevent tincd from sending packets to unexpecting nodes
+      Sanitize input in id_h - prevent integer overflows
+      Fix NULL pointer dereference in send_udp_info
+
+Sean McVeigh (2):
+      check for daemon pid existence before trying to connect to the control socket, and clean up stale files otherwise.
+      fix check in cmd_pid() for failure to connect to tincd
+
+Vittorio G (VittGam) (2):
+      fsck: Fix ed25519 public key reading, and fclose usage.
+      tincctl: Avoid falling back to 1024 bits RSA key generation when an invalid key size is specified.
+
+Dennis Lan (1):
+      Fix typo in src/upnp.c.
+
+Pacien TRAN-GIRARD (1):
+      Add fd_device
+
+Roman Savelyev (1):
+      Fix lost pointer trails in get_known_addresses().
 
 Vittorio Gambaletta (VittGam) (1):
       route: Support ToS/DiffServ priority inheritance when routing IPv6 packets.
 
-Version 1.0.31                                           January 15 2017
+lemoer (1):
+      Added comments and unfold deep "if"-construct in timeout_handler
+
+pacien (1):
+      Add LogLevel config option
+
+volth (1):
+      Avoid infinite loop on EBADFD
+
+Version 1.1pre14                                             May 01 2016
 ------------------------------------------------------------------------
 
-Guus Sliepen (1):
-      Releasing 1.0.31.
+Guus Sliepen (2):
+      Revert "Remove tinc.service, it is not necessary."
+      Releasing 1.1pre14.
 
-Élie Bouttier (1):
-      Remove ExecStop in tinc@.service
-
-Version 1.0.30                                           October 30 2016
+Version 1.1pre13                                           April 30 2016
 ------------------------------------------------------------------------
 
-Guus Sliepen (11):
-      Allow non-empty lines after status code from a HTTP proxy.
-      Fix proxy reply parsing broken by the previous commit.
-      Log only the first line of a proxy request rejection message.
-      Delay sending the real ID request until after a proxy request is granted.
-      Use AES256 and SHA256 by default, also for the meta-connections.
-      Enforce maximum amount of bytes sent/received on meta-connections.
-      Fix bit shifting arithmetic so the code actually does what the last commit message says.
-      Really fix byte budget calculation.
-      Use AES in CTR mode instead of OFB mode for meta-connections.
-      Use CFB mode for meta-connections to improve security.
-      Releasing 1.0.30.
+Guus Sliepen (4):
+      Fix BSD tun device support.
+      Remove tinc.service, it is not necessary.
+      AutoConnect now only chooses from nodes for which we know an address.
+      Releasing 1.1pre13.
 
-Version 1.0.29                                           October 09 2016
+Version 1.1pre12                                           April 24 2016
 ------------------------------------------------------------------------
 
-Guus Sliepen (11):
-      Preserve IPv6 scope_id in edges.
-      Ensure compatibility with OpenSSL 1.1.0.
-      Add -Wall to CFLAGS.
-      Check return value of RSA_generate_key_ex().
-      Force nul-termination of strings after vsnprintf().
-      Log warnings about dropped packets only with debug level 5 or higher.
-      Add a copy of ax_append_flag.m4.
-      Add ax_require_defined.m4.
-      Fix possibly unitialized variable.
-      Fix compiler warnings about format string errors on BSD.
-      Releasing 1.0.29.
-
-Version 1.0.28                                             April 10 2016
-------------------------------------------------------------------------
-
-Guus Sliepen (8):
-      Fix compiling bsd/device.c on systems without utun.
-      Really remove use of __DATE__ and __TIME__ to facilitate reproducible builds.
-      Add systemd service files.
-      Update .gitignore.
-      Ensure the service files are in the tarball.
-      Explicitly mention that LibreSSL can be used as well.
-      Update links in the documentation.
-      Releasing 1.0.28.
-
-Version 1.0.27                                             April 10 2016
-------------------------------------------------------------------------
-
-Guus Sliepen (26):
-      Add missing AM_PROG_CC_C_O to configure.ac.
-      Attribution for various contributors.
-      Update "now" after connect() when making outgoing connections.
-      Add ability to use proxies to connect to hostnames when there is no nameserver.
+Guus Sliepen (166):
+      Allow tinc to be compiled without OpenSSL.
+      Add missing nolegacy/crypto.c and prf.c.
+      Fixes for bugs in src/Makefile.am and tincctl.c introduced by cfe9285adf391ab66faeb5def811fe08e47a221a.
+      Fix indentation and some whitespace issues.
+      Use void pointers for opaque data blobs in the SHA512 code.
+      Use global "now" in try_udp() and try_mtu().
+      Remember whether we sent our key to another node.
+      Try to clarify the new code in net_packet.c a bit.
+      Correctly estimate the initial MTU for legacy packets.
+      Fix size of type 2 probe replies.
+      Proactively send our own key when we request another node's key.
+      Don't send probe replies if we don't have the other's key.
+      Fix segfault when sptps_test cannot open the key files.
+      Always keep UDP mappings alive for nodes that also have a meta-connection.
+      Immediately send our key when a meta-connection is established.
+      Only send small packets during UDP probes.
+      Remove RTT and packet loss estimation code.
+      Send MTU probes only once every PingInterval.
+      Move detection of PMTU decrease to try_mtu().
+      Keep track of the largest UDP packet size received from a node.
+      Move UDP probe reply code into its own function.
+      Send the size of the largest recently received packets in type 2 probe replies.
+      Send gratuitous type 2 probe replies.
+      Improve packet source detection.
+      Add the "fsck" command to the CLI.
+      Always call res_init() before getaddrinfo().
+      Make "tinc add" idempotent.
+      Document that --force should precede commands.
+      Suppress warnings about parsing Ed25519 keys when they are not present.
+      Merge remote-tracking branch 'dechamps/sptpsabort' into 1.1
+      Merge remote-tracking branch 'seehuhn/1.1' into 1.1
+      Fix the case where we detach and use --logfile.
+      --syslog and --logfile are mutually exclusive.
+      Merge remote-tracking branch 'dechamps/staticfix' into 1.1
+      Merge remote-tracking branch 'dechamps/fsckwin' into 1.1
+      Merge remote-tracking branch 'dechamps/winmtu' into 1.1
+      Merge remote-tracking branch 'dechamps/windevice' into 1.1
+      Always call res_init() before getaddrinfo().
+      Merge remote-tracking branch 'dechamps/wintapver' into 1.1
+      Allow one-sided upgrades to Ed25519.
+      Fix a possible segmentation fault during key upgrades.
+      Don't log an error message when receiving a TERMREQ.
+      Fix typo 0fda572c88d02b0b200ef81d72cc4da594fa0e38 that prevented some errors from being logged.
+      Remove "release-" from displayed git version.
+      Don't include build-time generated version_git.h in the tarball.
+      Really remove "release-" from the git-derived version string.
+      Fix invitations.
+      Fix receiving UDP packets from tinc 1.0.x nodes.
+      Use AF_UNSPEC instead of AF_UNKNOWN for unspecified local address in add_edge_h().
+      Be more liberal accepting ADD_EDGE messages with conflicting local address information.
+      Try all addresses for the hostname in an invitation URL.
+      Let sockaddr2str() handle AF_UNSPEC addresses.
+      Don't send local_address in ADD_EDGE messages if it's AF_UNSPEC.
+      Merge remote-tracking branches 'dechamps/sptpsrestart' and 'dechamps/keychanged' into 1.1
+      Remove info-in-builddir option from AM_INIT_AUTOMAKE().
+      Fix src/Makefile.am for *BSD.
+      Add newline at end of precomp_data.h and sc.h.
+      Add source of SPTPS errors to log messages.
+      Don't log seqno failures in sptps_verify_datagram().
+      If LOCALSTATEDIR is inaccessible, store the pid and socket files in the configuration directory.
+      Quit with an error message if ioctl(TUNSETIFF) fails.
+      Add "list" as an alias for "dump" in the CLI.
+      Allow dumping a list of outstanding invitations.
+      Allocate temporary filenames on the stack.
+      Fix check for LOCALSTATEDIR accessibility for the CLI.
+      Ensure "tinc start" knows if the daemon really started succesfully.
+      Don't write log messages to the umbilical pipe if we don't detach.
+      Use socketpair() instead of pipe() for the umbilical.
+      Set the CLOEXEC flag on the umbilical socket.
+      Update copyright notices.
+      Fix missing return value caused by the previous commit.
+      Fix autoconf check for function attributes.
+      Fix warnings about missing return value checks.
+      Fix receiving SPTPS data in sptps_speed and sptps_test.
+      Fix alignment of output of sptps_speed.
+      Fix crash is sptps_logger().
+      Don't #include OpenSSL headers when compiling without OpenSSL.
+      Coalesce two if statements that check for the same thing.
+      Call sockaddrfree(&e->local_address) in free_edge() instead of exit_edges().
+      Fix undefined behaviour when left-shifting signed integers.
+      Remove unused code that caused warnings about an uninitialized variable.
+      Use AC_CONFIG_MACRO_DIRS([m4]).
+      Make subnet caches static.
+      Fix the PRF function when compiling without OpenSSL.
+      Use AC_CONFIG_MACRO_DIR() instead of _DIRS().
+      In sssp_bfs(), never try to update myself.
+      Add -I m4 back to ACLOCAL_AMFLAGS.
+      Optionally install systemd service files.
+      Replace bare if statements with AS_IF in configure.ac.
+      Fix struct node_status_t.
+      Fix a few memory leaks in the CLI found by AddressSanitizer.
+      Avoid undefined behavior.
+      Update THANKS file.
+      Don't leave dead outgoing_t's in the outgoing_list.
+      list_delete() already free()s the deleted element.
+      Add support for recvmmsg().
+      Use static buffers for recvmmsg(), initialize them only as needed.
       Only add a reflexive address when we're sure it's working.
-      Fix compatibility with TAP-Win32 9.0.0.21 and later.
-      Fix warnings from the Clang Static Analyzer.
+      Merge remote-tracking branch 'mweinelt/tinc-gui' into 1.1
+      Add the ability to sign and verify files.
+      Update .gitignore.
+      Only check for -fno-strict-overflow if -fwrapv does not work.
+      Use nostdinc instead of overriding DEFAULT_INCLUDES.
       Improve performance of edge updates.
+      Fix forwarding of edge updates.
       Clarify that scripts are called synchronously.
       Small fixes for the documentation.
       Add warnings for bad combinations of Device and Interface.
-      Fix forwarding of edge updates.
+      Fix for botched cherry-pick commit 60fb230.
+      Fix typo.
       Don't compile getopt*.c if the system provides getopt_long().
       Update .gitignore.
       Update THANKS.
       Use iface instead of interface.
-      Update copyright notices.
-      Remove use of __DATE__ and __TIME__ to facilitate reproducible builds.
-      Cast 0xff to char before comparing it to another char.
-      Get rid of a warning when compiling tinc using MinGW.
-      Every BSD flavor has a tap device nowadays.
-      Use devname() if available to support devfs cloning on BSD.
-      Use SIOCGIFADDR on BSDs that support it.
+      Support ToS/DiffServ for IPv6 meta and UDP connections.
+      Fix --logfile without a filename on Windows.
+      Never call putenv() with data on the stack.
+      Update "now" after connect() when making outgoing connections.
+      Update support for BSD tun/tap devices, add support for OS X utun interfaces.
+      Explicitly mention that LibreSSL can be used as well.
+      Update links in the documentation.
       Enable silent builds by default.
-      Add support for OS X utun interfaces.
-      Releasing 1.0.27.
+      Really don't compile getopt*.c if the system provides getopt_long().
+      Remove elliptic curve stubs from gcrypt/, add PRF implementation.
+      Update .gitignore.
+      Make text files Markdown-compatible.
+      Remove checks for headers and functions that are in C99.
+      Fix compiling under MinGW.
+      Replace usleep() with nanosleep().
+      Use getcwd() instead of get_current_dir_name().
+      Fix typo in Makefile.am.
+      Fix version_get.h generation on BSD.
+      Remove checks for non-C99 compliant compilers.
+      Remove support for Windows 2000 and anything that doesn't support getaddrinfo().
+      Make some platform-specific header checks conditional.
+      Add version_git.h and sample-config.tar.gz to CLEANFILES.
+      Don't assume sa.sa_family is a short int.
+      Remove use of strcpy() and sprintf().
+      Don't use HAVE_SYSTEM, the autoconf check was removed.
+      Fix a non-working cast to get rid of a compiler warning.
+      Fix generation of version_git.h for some versions of BSD make.
+      Fix some compiler warnings from MinGW.
+      Fix conditional checking of tun/tap headers on DragonFly BSD.
+      Fix crash at startup when Device is not specified on OS X.
+      Stop using SOL_TCP, SOL_IP and SOL_IPV6.
+      Document how invitation files work.
+      Generate a tinc-up script from an invitation.
+      Move some stray #includes.
+      Allow gateways to be specified for routes.
+      Fix gateway parsing in invitation files.
+      Fix compiler warnings.
+      Add a test for tinc-up creation from invitations.
+      Chdir() to the configuration directory instead of /.
+      Use ifconfig_header().
+      Add stricter checks for netnames.
+      Handle special characters in sptps_test only if the --special option is given.
+      Don't call terminate_connection(myself->connection).
+      Speed up AutoConnect at startup.
+      Fix the "network" command in tinc shell.
+      Move documentation of invitations to the manual.
+      Have "tinc fsck" recognize Ed25519PublicKey statements.
+      Fix possible read of freed memory when verifying the signature of a file.
+      Fix a compiler warning on Windows.
+      Fix starting tinc as a service on Windows.
+      Don't check file permissions on Windows during fsck.
+      Releasing 1.1pre12.
+
+Etienne Dechamps (72):
+      Clarify the send_mtu_probe() function.
+      Add the try_tx() function.
+      Move try_sptps() closer to try_tx().
+      Add UDP discovery mechanism.
+      Move responsibility for local discovery to UDP discovery.
+      Remove PMTU discovery code redundant with UDP discovery.
+      Move PMTU discovery code into the TX path.
+      Move try_mtu() closer to try_tx().
+      Fix MTU as soon as possible.
+      Use -1 to identify the post-initial MTU discovery state.
+      Send one MTU probe at a time.
+      Remove bandwidth estimation code.
+      Use a smarter algorithm for choosing MTU discovery probe sizes.
+      Adjust MTU probe counts.
+      Don't send MTU probes smaller than 512 bytes.
+      Add IP_MTU-based maxmtu estimation.
+      Fine-tune the MTU discovery multiplier for the maxmtu < MTU case.
+      Recalculate and resend MTU probes if they are too large for the system.
+      Use a different UDP discovery interval if the tunnel is established.
+      Fix typo in logging statement.
+      Fix dynamic UDP SPTPS relaying.
+      Fix UDP/MTU discovery in intermediate SPTPS UDP relays.
+      Don't abort() willy-nilly in SPTPS code.
+      Add UDP_INFO protocol message.
+      Add MTU_INFO protocol message.
+      Throttle the rate of UDP_INFO messages.
+      Throttle the rate of MTU_INFO messages.
+      Don't send UDP probes past static relays.
+      Fix invalid getuid() call on Windows.
+      Fix HAVE_DECL_RES_INIT conditionals.
+      Make sure packet header structures are correctly packed on Windows.
+      When disabling the Windows device, wait for pending reads to complete.
+      Fix Windows device asynchronous write behavior.
+      Set the default for UDPRcvBuf and UDPSndBuf to 1M.
+      Increase the ReplayWindow default from 16 to 32.
+      Log TAP-Windows driver version on startup.
+      Warn about performance if using TAP-Windows >=9.21.
+      Use git description as the tinc version.
+      Use git describe to populate autoconf's VERSION.
+      Remove explicit distribution rules for m4 scripts.
+      Add support for out-of-tree ("VPATH") builds.
+      When relaying, send probes to the destination, not the source.
+      Use the correct originator node when relaying SPTPS UDP packets.
+      Expose the raw SPTPS send interface from net_packet.
+      Try to use UDP to relay SPTPS packets received over TCP.
+      Rename REQ_SPTPS to SPTPS_PACKET.
+      Only read one record at a time in sptps_receive_data().
+      Introduce raw TCP SPTPS packet transport.
+      Prevent SPTPS key regeneration packets from entering an UDP relay path.
+      Trivial: make sptps_receive_data_datagram() a little more readable.
+      Proactively restart the SPTPS tunnel if we get receive errors.
+      Don't send KEY_CHANGED messages if we don't support the legacy protocol.
+      Make sure the MIN() macro is defined.
+      Don't pollute the system header directory namespace.
+      Fix SPTPS condition in try_harder().
+      Don't parse node IDs if the sending node doesn't support them.
+      Fix direct UDP communciation with pre-relaying 1.1 nodes.
+      Fix crashes when trying unreachable nodes.
+      Don't set up an ongoing connection to myself.
+      Fix wrong format string type in send_sptps_tcppacket().
+      Fix invalid pointer use in get_my_hostname().
+      Don't try to relay packets to unreachable nodes.
+      Protect against callbacks removing items from the io tree.
+      Use a splay tree for node UDP addresses in order to avoid collisions.
+      Revert "Cache node IDs in a hash table for faster lookups."
+      Make sure the packet source MAC address is always set.
+      Add a new optional dependency on the miniupnpc library.
+      Add UPnP support to tincd.
+      Allow tinc to be built with miniupnpc on Windows.
+      Try to ensure we build correctly against various libminiupnpc versions.
+      Don't unset validkey when receiving SPTPS handshakes over ANS_KEY.
+      Add upnp.h to tincd SOURCES.
+
+thorkill (8):
+      Fixed 2 leaks in setup_myself()
+      Cleanup edges stored in edge_weight_tree on exit
+      Cleanup local_address in protocol_edge.c
+      Removed double break;
+      Included missing names.h
+      Make sure we do not allocate new edge when talking to old nodes and the same edge already exists
+      Prevent tinc from forgeting e->local_address
+      Do not access e->to->prevedge if not defined
 
 Vittorio Gambaletta (VittGam) (6):
       Fix DecrementTTL option.
@@ -221,201 +582,947 @@ Vittorio Gambaletta (VittGam) (6):
       s/broadcast_packet_helper/route_broadcast/
       Remove forward declaration for do_decrement_ttl.
 
-LunarShaddow (3):
+Martin Weinelt (5):
+      tinc-gui: Reformat codebase according to PEP8
+      tinc-gui: Update Node object to correctly parse responses
+      tinc-gui: Fix GetListCtrl method name in SuperListCtrl
+      tinc-gui: Use ArgumentParser, default to python2
+      tinc-gui: Properly initialize class attributes for VPN in __init__
+
+Sven-Haegar Koch (3):
+      Fixed variables.test testsuite after 'Make "tinc add" idempotent.' change.
+      Let sockaddr2hostname() handle AF_UNSPEC addresses.
+      Fix check for public key in invite-join.test.
+
+Florian Klink (2):
+      (read|append)_config_file: log open errors as LOG_DEBUG
+      setup_outgoing_connection: log to LOG_DEBUG on if no known address
+
+LunarShaddow (2):
       fix typo
       re-arrange include sequence to avoid a mingw introduced bug.
-      Proofing README.
 
-Florian Weik (1):
-      Fix NAME variable in subnet-* scripts for local subnets.
-
-Nathan Stratton Treadway (1):
-      Fix invalid checksum generation.
-
-Version 1.0.26                                              July 05 2015
-------------------------------------------------------------------------
-
-Guus Sliepen (14):
-      Use VittGam's real name.
-      Attribution for Saverio Proto.
-      Always call res_init() before getaddrinfo().
-      Fix --logfile without a filename on Windows.
-      Never call putenv() with data on the stack.
-      Return non-zero exit code when encountering configuration errors during startup.
-      Fix autoconf check for function attributes.
-      Fix spelling of FORTIFY_SOURCE.
-      Update copyright notices.
-      Attribution for various contributors.
-      Only check for -fno-strict-overflow if -fwrapv does not work.
-      Fix unputenv() on Windows.
-      Don't try to call res_init() if ./configure told us it doesn't exist.
-      Releasing 1.0.26.
+Dato Simó (1):
+      Fix typo in tinc.texi.
 
 Jo-Philipp Wich (1):
       fix musl compatibility
 
-Version 1.0.25                                          December 22 2014
+Jochen Voss (1):
+      Add a new --syslog option for tincd.
+
+Nathan Stratton Treadway (1):
+      Fix invalid checksum generation.
+
+Pierre Emeriaud (1):
+      Fix typo in tincctl help.
+
+xentec (1):
+      Fix compile errors introduced in cfe9285adf391ab66faeb5def811fe08e47a221a
+
+Version 1.1pre11                                        December 27 2014
 ------------------------------------------------------------------------
 
-Guus Sliepen (7):
-      Fix date of last NEWS entry.
-      Remember ToS/Diffserv priority for each socket individually.
-      Attribution for various contributors.
-      Automatically choose a tap device on Mac OS X when using switch Mode.
-      Update documentation for Mac OS X.
-      Check whether res_init() really lives in libresolv.
-      Releasing 1.0.25.
+Etienne Dechamps (68):
+      Move Solaris if_fd to local scope.
+      Make device close cleaner.
+      Cleanly remove the device FD from the event loop before closing it.
+      Add DeviceStandby option to only enable the device when nodes are reachable.
+      Make DeviceStandby control network interface link status on Windows.
+      Fix Windows includes.
+      Fix errno references when handling socket errors.
+      Protect against spurious connection events.
+      Fix connection event error handling.
+      Use native Windows events for the event loop.
+      Make the event loop expose a Windows event interface.
+      Use a Windows event to stop tinc when running as a service.
+      Remove the TAP-Win32 reader thread.
+      Add local address information to edges.
+      Use edge local addresses for local discovery.
+      Remove broadcast-based local discovery mechanism.
+      Enable LocalDiscovery by default.
+      Implement sptps_verify_datagram().
+      Make broadcast addresses configurable.
+      Make IPv4 multicast space 224.0.0.0/4 broadcast by default.
+      Regenerate build date and time every time tinc is built.
+      Use git description as the tinc version.
+      Rewrite, fix and improve str2net().
+      When printing MAC addresses, always use trailing zeroes.
+      Don't print subnet prefix lengths and weights for one-host subnets.
+      Canonicalize IPv6 addresses as per RFC 5952 before printing them.
+      Fix tinc event loop reentrancy from timeout handlers.
+      Make sure myport is set correctly when running with Port = 0.
+      Fix event loop io tree inconsistency on Windows.
+      Fix a typo (FORTIFY_SOURCE).
+      Handle the "no local address" case in send_sptps_data().
+      Don't initialize outpkt to an unused value.
+      Remove redundant connection_t::status.active field.
+      Only declare the origpriority variable if we support priority.
+      Remove an unnecessary pointer dereference in execute_script().
+      Fix callback signature for TAP-Win32 device_handle_read().
+      Remove unused variable in TAP-Win32 setup_device().
+      Remove unused device stats variables.
+      Resolve KEY_EVENT conflict between Windows and ncurses.
+      Check if devops is valid before closing the device.
+      Shutdown cleanly when receiving a Windows console shutdown request.
+      Fix "tinc start" on Windows when the path contains spaces.
+      Improve subprocess behavior in tinc start command.
+      Add documentation about using system-assigned ports.
+      Verify seqno early in sptps_verify_datagram().
+      Add a non-interactive mode to tinc commands.
+      Only read from TAP-Win32 if the device is enabled.
+      Handle TAP-Win32 immediate reads correctly.
+      Clarify copyright ownership for code authored by Etienne Dechamps.
+      Remove Google from the list of copyright owners.
+      Fix undefined HOST_NAME_MAX on Windows.
+      Don't enable the device if the reachable count is zero.
+      Fix wrong identifier in SO_NOSIGPIPE call.
+      Fix default TAP device on Darwin.
+      Ignore the Interface option if device rename is impossible.
+      Fix default device path selection on BSD.
+      Preemptively mirror REQ_PUBKEY messages from nodes with unknown keys.
+      Fix protocol version check for type 2 MTU probe replies.
+      Invalidate UDP information on address changes.
+      Introduce node IDs.
+      Change vpn_packet_t::seqno from uint32_t to uint8_t[4].
+      Prepend source node ID information to UDP datagrams.
+      Add UDP datagram relay support to SPTPS.
+      Don't send MTU probes to nodes we can't reach directly.
+      Make sure to discover MTU with relays.
+      Query the Linux device for its MAC address.
+      Don't spontaneously start SPTPS with neighbors.
+      Use plain old PACKET for TCP packets sent directly to a neighbor.
 
-Borg (3):
-      Fixed scripts calling under Win32.
-      Get MAC of TAP device.
-      Fixed tinc-up script calling on Win32.
+Guus Sliepen (68):
+      Really fix compiling under Windows.
+      Add missing attribution for 1.1pre10 to the NEWS file.
+      Add "network" command to list or switch networks.
+      Rewind the file before trying to use PEM_read_RSA_PUBKEY().
+      Handle a disconnecting tincd better.
+      Fix return value of b64encode().
+      Use Ed25519 keys.
+      Properly initialize buffers.
+      Merge branch '1.1-ed25519' into 1.1
+      Use the ChaCha-Poly1305 cipher for the SPTPS protocol.
+      sptps_test: allow using a tun device instead of stdio.
+      Put brackets around IPv6 addresses in invitation URL, even if there is no port number.
+      Nexthop calculation should always use the shortest path.
+      Fix compiler warnings.
+      Change AutoConnect from int to bool.
+      Use void pointers to opaque buffers.
+      Add missing closedir().
+      Fix a crash when we have a malformed public ECDSA key of another node.
+      Fix PMTU discovery via datagram SPTPS.
+      Add sanity checks when generating new RSA keys.
+      Rename ECDSA to Ed25519.
+      Implement a PEM-like format for Ed25519 keys.
+      Allow Cipher and Digest "none".
+      Fix base64 decoding of Ed25519 keys.
+      Return non-zero exit code when "tinc get" does not find the requested variable.
+      Unconditionally return non-zero exit code when "tinc del" does not find the requested variable.
+      Remove the warnings when IP_DONTFRAGMENT/IPV6-DONTFRAG is not supported.
+      Merge branch 'winevents-clean' of https://github.com/dechamps/tinc into 1.1
+      Give getsockopt() a reference to a socklen_t.
+      Fix compiler warnings.
+      Fix segmentation fault when dumping subnets.
+      Fix incorrect format qualifiers.
+      Reserve legacy active bit in connection_status_t.
+      Fix a potential file descriptor leak.
+      Fix unsafe use of strncpy() and sprintf().
+      Merge branch 'winwarnings' of https://github.com/dechamps/tinc into 1.1
+      Merge branch 'ctrl' of https://github.com/dechamps/tinc into 1.1
+      Merge branch 'tincstart' of https://github.com/dechamps/tinc into 1.1
+      Merge branch 'keysegfault' of https://github.com/dechamps/tinc into 1.1
+      Revert "Use git description as the tinc version."
+      Fix compiler warnings.
+      Check validity of Ed25519 key during an upgrade.
+      Log an error message with the node's name when receiving bad SPTPS packets.
+      Better log messages when we already know the peer's key during an upgrade.
+      Add an explicit hash_delete() function.
+      Cache node IDs in a hash table for faster lookups.
+      Avoid memmove() for legacy UDP packets.
+      Make UDP packet handling more efficient.
+      Changes that should have been in commit 46fa12e666badb79e480c4b2399787551f8266d0.
+      Fix segfault when receiving UDP packets with an unknown source address.
+      Fix reception of SPTPS UDP packets.
+      Avoid using OpenSSL's random number functions.
+      Don't pass uninitialized bytes to ioctl().
+      Don't use myself->name in device_disable(), it's already freed.
+      Fix memory leaks found by Valgrind.
+      Use void pointers for opaque data blobs in the SPTPS code.
+      Add a variable offset to vpn_packet_t, drop sptps_packet_t.
+      Merge remote-tracking branch 'groxxda/gui-fixes' into 1.1
+      Allow running tinc without RSA keys.
+      Update THANKS file.
+      Check whether res_init() really lives in libresolv.
+      BSD make doesn't like .PHONY .c files.
+      We don't depend on ECDH functions from OpenSSL anymore.
+      Linux doesn't like .PHONY .o files.
+      Remove AES-GCM support.
+      Better default paths for log and PID files on Windows.
+      Add BroadcastSubnet and DeviceStandby options to the manual and completion.
+      Releasing 1.1pre11.
+
+Sven-Haegar Koch (4):
+      Fix exit code of "tinc get".
+      commandline.test: Adding test that fetching non-existing config setting really fails.
+      Do not disconnect when no ecdsa key is known yet.
+      Try handling the case when the first side knows the ecdsa key of
+
+William A. Kennington III (3):
+      utils: Refactor get_name's functionality into util for global access
+      utils: Refactor check_id out of protocol for global access
+      tincctl: Use replace_name to properly replace and validate input hostnames
+
+Baptiste Jonglez (2):
+      Clarify man page regarding the IndirectData option
+      Fix typos in the manual page
 
 Alexis Hildebrandt (1):
       Add support to link against libresolv Mac OS X
 
-Baptiste Jonglez (1):
-      Use the description from the 1.1 man page for the IndirectData option
-
-David Pflug (1):
-      Update README.android
-
-Jochen Voss (1):
-      Fix some typos in the manual.
-
-Tomislav Čohar (1):
-      Configure minimum reconnect timeouts.
-
-VittGam (1):
-      Support ToS/DiffServ priority handling for IPv6 meta and UDP connections.
-
-Version 1.0.24                                               May 11 2014
-------------------------------------------------------------------------
-
-Guus Sliepen (13):
-      Remove useless variable 'hard' from try_harder().
-      Merge pull request #14 from luckyhacky/master
-      Add an autoconf check for res_init().
-      Nexthop calculation should always use the shortest path.
-      Fix issues found by Coverity.
-      Fix warnings found by GCC 4.9.
-      Fix a few more issues found by Coverity.
-      Fix a few more issues found by Coverity.
-      Drop h and hh length modifiers from printf format strings.
-      Fix a bug that could prevent tinc from starting correctly on Windows.
-      FIx the autoconf checks for res_init().
-      Remove the warnings when IP_DONTFRAGMENT/IPV6-DONTFRAG is not supported.
-      Releasing 1.0.24.
-
-Steffan Karger (3):
-      Use constant time memcmp() when comparing packet HMACs.
-      Use cryptographically strong random when generating keys.
-      Check RAND_bytes() return value, fail when getting random fails.
-
 Armin Fisslthaler (1):
       reload /etc/resolv.conf in SIGALRM handler
 
-Loic Dachary (1):
-      fix documentation typo
+Franz Pletz (1):
+      tinc-gui: Use /usr/bin/env to resolve path to python
 
-luckyhacky (1):
-      update to openssl version 1.0.1g due to lack of heartbleed bug in prior version of openssl
+Saverio Proto (1):
+      Fix typo in comment
 
-refs/tags/1.0.23-android-1                                 March 11 2014
+groxxda (1):
+      tinc-gui: Don't assign broadcast subnets to any node, fix parsing of Edges, fix diplay of Subnet.weight.
+
+Version 1.1pre10                                        February 07 2014
 ------------------------------------------------------------------------
 
-Guus Sliepen (13):
+Guus Sliepen (52):
+      Wrong date for the 1.1pre9 release in the NEWS.
+      Avoid using BIOs.
+      Add a benchmark for the SPTPS protocol.
+      Don't leak memory during the key generation speed test.
+      Link sptps_speed with -lrt.
+      Fix segfault when Name = $HOST but $HOST is not set.
+      Fix typos in the documentation.
+      Use AES-256-GCM for the SPTPS protocol.
+      Fix sending empty SPTPS records.
+      Clean up child processes from proxy type exec.
+      Make sptps_test less verbose by default.
+      Fix sending bulk data starting with a newline.
+      Fix two warnings from Clang's static analyzer.
+      Remove an unused variable.
+      Make LocalDiscovery work for SPTPS packets.
+      Allow "none" for Cipher and Digest again.
       Mention in the manual that multiple Address staments are allowed.
       If no Port is specified, set myport to actual port of first listening socket.
-      Enable compiler hardening flags by default.
       Update support for Solaris.
       Include <limits.h> for PATH_MAX.
       Stricter check for raw socket support.
+      Avoid using a variable named "sun". Solaris doesn't like it.
       Use hardcoded value for TUNNEWPPA if net/if_tun.h is missing on Solaris.
-      Fix incorrectly merged bits from 80cd2ff73071941a5356555b85a00ee90dfd0e16.
+      Prefer ncurses over curses.
+      Don't print device statistics when exiting tinc.
+      Allow running without ECDSA keys If ExperimentalProtocol is not explicitly set.
+      Give full path to unconfigured tinc-up script.
+      Don't print an error when no ECDSA key is known for a node using the legacy protocol.
+      Remove erroneous warning about SPTPS being disabled.
+      Enable compiler hardening flags by default.
+      Add our own autoconf check for libgcrypt.
       Don't enable -fstack-protector-all.
-      Remove or lower the priority of some debug messages.
+      Fix handling of --with-libgcrypt.
       Clarify StrictSubnets.
+      Update the documentation of the tinc command.
+      Add index entries for the CLI commands.
+      Let tinc-gui use correct address family when connecting to tincd via TCP.
+      Document clearly that tinc depends on curses and readline libraries.
+      Document that 1.1 uses AES-256 in GCM mode.
+      Add the ListenAddress option.
+      Test two tinc daemons using network namespaces.
+      Add missing newlines when copying variables from tinc.conf to an invitation file.
+      Don't ask questions if we are not running interactively.
+      Document Weight and also allow it to be set from tinc.conf.
+      Use addresses learned from other nodes when making outgoing connections.
       Attribution for various contributors.
       Handle errors from TAP-Win32/64 adapter in a better way.
-
-Florent Clairambault (2):
-      Adding "conf.d" configuration dir support.
-      Adding some documentation around the /etc/tinc/$NET/conf.d directory.
-
-Vilbrekin (1):
-      Update android build instructions. Disable PIE as this is not supported on some devices.
-
-Version 1.0.23                                           October 19 2013
-------------------------------------------------------------------------
-
-Guus Sliepen (9):
-      Check for writability when waiting for a socket to finish connecting.
-      Don't send PING requests on connections which are not active yet.
-      Fix segfault when Name = $HOST but $HOST is not set.
-      Fix typos in the documentation.
-      Modernize the build system.
-      Get rid of the splay tree implementation.
-      Add description of IffOneQueue and MaxTimeout to the info manual.
-      Clean up child processes from proxy type exec.
-      Releasing 1.0.23.
-
-Version 1.0.22                                            August 13 2013
-------------------------------------------------------------------------
-
-Guus Sliepen (7):
-      Better optional argument handling.
-      Fix a typo.
-      Set $NAME when calling host-up/down and subnet-up/down scripts.
-      Don't use vasprintf() anymore on Windows.
-      Don't echo broadcast packets back when Broadcast = direct.
+      Attribution for Dennis Joachimsthaler.
       Update copyright notices.
-      Releasing 1.0.22.
+      Fix compiling for Windows.
+      Check whether OpenSSL has support for GCM.
+      Releasing 1.1pre10.
+
+Dennis Joachimsthaler (2):
+      Fix tinc-gui on Windows.
+      Ensure tinc-gui running in 64 bits mode can find tinc's 32 bit registry key.
+
+Florent Clairambault (1):
+      Adding "conf.d" configuration dir support.
+
+Version 1.1pre9                                        September 08 2013
+------------------------------------------------------------------------
+
+Guus Sliepen (40):
+      Stop using EXTRA_DIST in src/Makefile.am.
+      Remove texi2html rule in docs/Makefile.
+      Create UNIX socket at the same time as the PID file is created.
+      Don't force a .bat extension for scripts under Windows.
+      Fix order of tincd's initialization.
+      Remove broadcast of KEY_CHANGED message during tinc's initialization.
+      Bind outgoing sockets again.
+      Resolve the local host name before generating the invitation file.
+      Use our own infrastructure for finding out the local node's externally visible host name.
+      Let a server explicitly send a notification when the invitation protocol succeeded.
+      Ensure the invitation filenames do not reveal the secret cookie.
+      Execute scripts when invitations are created or accepted.
+      Use PATHEXT when checking for the presence of scripts on Windows.
+      Tell invited node about Mode and Broadcast settings.
+      Call WSAStartup() in main().
+      When generating invitations, handle any order of Port and Adress statements.
+      Add an option to test datagram SPTPS with packet loss.
+      Fix CTR mode.
+      Fix the replay window in SPTPS.
+      Allow testing the replay window with sptps_test.
+      Start of a test suite.
+      Some shells set $_ to an absolute path.
+      Make sptps_test more easy to work with.
+      Small fixes for tests.
+      Add test for import, export and exchange commands.
+      Fix tincd logfile location when running tests.
+      Clean up leftover tincd and sptps_test processes.
+      Send a RELOAD to a running tincd when a new invitation key has been generated.
+      Slightly relax the connection rate limit for a single address.
+      Also test whether tinc daemons can connect to each other after import/export.
+      Add a test for invite and join commands.
+      Exit value 1 instead of a random non-zero value.
+      Fix multicast device.
+      Add two more test scripts.
+      Don't return zero-length packets when receiving multicast loopback packets.
+      Test running ping through two tinc daemons.
+      Automake doesn't like info files being mentioned in CLEANFILES.
+      Make sure test scripts end up in the tarball.
+      Don't try to mkdir(CONFDIR) if --config is used.
+      Releasing 1.1pre9.
 
 Etienne Dechamps (1):
+      Fix broken build with --with-openssl, --with-libgcrypt.
+
+Version 1.1pre8                                           August 13 2013
+------------------------------------------------------------------------
+
+Guus Sliepen (56):
+      Don't try to create tinc.conf when using set or add commands.
+      Modernize the configure script a bit.
+      Use conditional compilation for device.c.
+      Use conditional compilation for cryptographic functions.
+      Rename xmalloc_and_zero() to xzalloc().
+      Add generic crypto headers.
+      Add more __attribute__((malloc)) where appropriate.
+      Add __attribute__((warn_unused_result)) to crypto functions.
+      Fix warnings for functions marked __attribute((warn_unused_result)).
+      Add a few more checks and warnings in the crypto functions.
+      Enable the SPTPS protocol by default.
+      Fix check for presence of ECDSA public key for outgoing connections.
+      Use read_host_config() where appropriate.
+      Don't free ephemeral ECDH keys twice.
+      Fix potential NULL pointer dereferences.
+      Don't try to handle incoming data if sptps_start() has not been called yet.
+      Enable and fix warnings from automake.
+      Send a new key when we receive packets from a node we don't have a valid key for.
+      Annotate the xalloc functions.
+      Improve base64 encoding/decoding, add URL-safe variant.
+      Add a newline when logging to stderr in the tinc binary.
+      Fix port number in pidfile.
+      Add an invitation protocol.
+      Better optional argument handling.
+      Allow the log output to be stopped with control-C in tinc's shell.
+      Use strerror() instead of gai_strerror() when err == EAI_SYSTEM.
+      Add the LocalDiscoveryAddress option.
+      Set $NAME when calling host-up/down and subnet-up/down scripts.
+      Add connection rate limiting.
+      Fix warning "Both netname and configuration directory given" on Windows.
+      Add missing definitions on Windows.
+      Don't search in local directories for include files.
+      Don't use vasprintf() anymore on Windows.
+      Attribution for Etienne Dechamps.
+      Forbid protocol version rollback.
+      Allow extra options to be passed to "tinc restart" again.
+      Honour umask, let temporary key files inherit original's permissions.
+      Fix compression when using the SPTPS protocol.
+      Warn when incorrect use of add or set causes variables to be removed.
+      Allow control-C to stop tincd without stopping the tinc shell.
+      Don't forget the Port variable when creating an invitation URL.
+      Choose a different Port when 655 isn't available when doing "tinc init".
+      Choose a different Port when 655 isn't available when doing "tinc join".
+      Make absolutely sure we can write config files before accepting an invitation.
+      Defer handling netname conflicts when accepting an invitation.
+      Use umask() to set file and UNIX socket permissions without race conditions.
+      Clean up the SIGINT handler.
+      Really retry outgoing connections immediately if requested.
+      Non-zero exit code when reloading config file fails after SIGHUP.
+      Fix a typo.
+      Don't echo broadcast packets back when Broadcast = direct.
+      Move .h files from noinst_HEADERS to tincd_SOURCES.
+      Build .tar.gz instead of .tar.xz.
+      Update copyright notices.
+      Don't typedef the same struct in two header files.
+      Releasing 1.1pre8.
+
+Etienne Dechamps (5):
       Fix combination of Mode = router and DeviceType = tap on Linux.
+      Fix hash_function().
+      Disable PMTU discovery when TCPOnly is set.
+      Introduce lightweight PMTU probe replies.
+      Further improve bandwidth estimation for type 2 MTU probe replies.
 
-Version 1.0.21                                             April 22 2013
+Sven-Haegar Koch (1):
+      Modified some error messages in src/sptps.c.
+
+Version 1.1pre7                                            April 22 2013
 ------------------------------------------------------------------------
 
-Guus Sliepen (2):
+Guus Sliepen (12):
+      Use UDP when using sptps_test in datagram mode.
+      Flush output buffers in the tap reader thread on Windows.
+      Better default output file for generated public keys.
+      Allow changing configuration with tincctl without the "config" keyword.
+      Avoid calling time(NULL).
+      Include README.android in the tarballs.
+      Rename tincctl to tinc.
+      Remove references to the config keyword.
+      Describe the SPTPS protocol in the manual.
+      Fix completion of add/del/get/set commands.
       Drop packets forwarded via TCP if they are too big (CVE-2013-1428).
-      Releasing 1.0.21.
+      Releasing 1.1pre7.
 
-Version 1.0.20                                             March 03 2013
+Version 1.1pre6                                         February 20 2013
 ------------------------------------------------------------------------
 
-Guus Sliepen (30):
-      Use /dev/tap0 by default on FreeBSD and NetBSD when using Mode = switch.
-      Document how to load the tap driver on FreeBSD.
-      Update THANKS file.
-      Also clarify hostnames=[yes|no] in tinc.conf(5).
-      Attribution for Vil Brekin and some code style cleanups.
-      Don't ignore Makefile.am.
-      Fix links in documenation.
-      Attribution for Martin Schürrer.
-      Add strict checks to hex to binary conversions.
-      Clear connection options and status fields in free_connection_partially().
-      Fix warnings from cppcheck.
-      Clear Ethernet header when reading packets from a tun device.
-      Clear status and options fields of unreachable nodes.
+Guus Sliepen (16):
+      Fix datagram SPTPS.
+      Fix a typo.
+      Get microsecond time resolution on Windows.
+      Detect increases in PMTU.
+      Remove direct inclusion of OpenSSL headers in net_packet.c and tincd.c.
+      Fix tincd terminating immediately on Windows.
+      Check for writability when waiting for a socket to finish connecting.
+      Fix segmentation fault when trying to connect via a SOCKS5 proxy.
+      Don't send proxy requests for incoming connections.
+      Derive UNIX socket filename from PID filename.
+      Let the GUI use UNIX sockets if available.
+      Don't expect a response from tincd after sending REQ_STOP.
+      Fix a tiny memory leak.
+      Fix compiler warnings on Windows.
+      Fix compiler warnings on some BSD variants.
+      Releasing 1.1pre6.
+
+Version 1.1pre5                                          January 20 2013
+------------------------------------------------------------------------
+
+Guus Sliepen (24):
+      Clarify the description of IndirectData and Mode = router.
+      Fix display of cumulative packet counters.
+      Fix infinite loop in timeout handling on Windows.
+      Fix support for tunemu on iOS devices.
+      Fix a typo.
+      Note that node Names are case sensitive.
+      Note that tincctl import is only meant to work with data from tincctl export.
+      Mention that the -L, -R and -U options are not supported on all platforms.
+      Don't complain about garbage if we skipped importing a host file.
+      Better error messages when using -L, -R or -U on platforms that do not support it.
+      Always complain if too many arguments are given for tincctl commands.
+      Check HMAC before sequence number.
+      Add the tincctl exchange and exchange-all commands.
+      Count the number of correctly received UDP packets.
+      Estimate RTT, bandwidth and packet loss between nodes.
+      Fix the minimum spanning tree algorithm.
+      Handle SIGINT gracefully.
+      Move make_names() and related variables to its own source file.
+      Fix compilation of UML and VDE device support.
+      Allow connections via UNIX sockets.
+      Make sure PriorityInheritance also works in switch mode.
+      Remove possible definition of timersub(), which is also in dropin.h.
+      Fix tincctl init when /etc/tinc does not yet exist.
+      Releasing 1.1pre5.
+
+Version 1.1pre4                                         December 05 2012
+------------------------------------------------------------------------
+
+Guus Sliepen (35):
       Fix warnings from groff.
+      Keep track of the number of nodes in a tree.
+      Add the AutoConnect option.
+      Slightly randomize all timeouts.
+      Fix potential buffer overflow reading the PID file.
       Using alloca() for a constant sized buffer is very silly.
       Make sure PMTU discovery works in switch mode with VLAN tags.
+      Mention libcurses and libreadline in the manual.
       Mention in the manual that support for LZO and zlib can be disabled.
+      Fix index entry for section about readline library.
       Fix configure script help text for --enable options.
       Don't take the address of a variable whose scope is about to disappear.
       Send broadcast packets using a random socket, and properly support IPv6.
       Remove text saying you must have one of PrivateKey or PrivateKeyFile in tinc.conf.
-      Fix support for tunemu on iOS devices.
-      Make sure PriorityInheritance also works in switch mode.
-      Detect increases in PMTU.
-      Fix a compiler warning.
-      Fix segmentation fault when trying to connect via a SOCKS5 proxy.
-      Don't send proxy requests for incoming connections.
-      Fix compiler warnings on Windows.
-      Fix detection of rejected SOCKS5 proxy requests.
-      Releasing 1.0.20.
+      Disable support for kqueue on MacOS/X.
+      Also don't use poll() on MacOS/X.
+      Choose a suitable socket when updating a node's UDP address.
+      Try all known addresses of node during PMTU discovery, now also for SPTPS.
+      Improve UDP address selection.
+      Ensure MTU probe replies are sent back the same way they came in.
+      Drop libevent and use our own event handling again.
+      Allow multiple timeouts to expire at the exact same time.
+      Fix check for expired events.
+      Fix use of unitialised values in hash tables.
+      Set a node's pointers to zero before trying to insert it into a tree.
+      Fix crash in timeout handling.
+      Fix compiler error on Windows.
+      More fixes for Windows.
+      Add option to dump only a list of reachable nodes.
+      Remove GraphDumpFile from the manual and manpages.
+      Fix compiler warnings on OpenBSD.
+      Don't use nested functions.
+      Scale packet counters similar to byte counters.
+      Fix whitespace.
+      Releasing 1.1pre4.
+
+Version 1.1pre3                                          October 14 2012
+------------------------------------------------------------------------
+
+Guus Sliepen (384):
+      Created the 1.1 branch where large code changes can take place,
+      Only free members of connection_t that have been allocated.
+      Port fixes from release 1.0.8.
+      Properly delete listener socket events on shutdown.
+      128 listener sockets is way too much.
+      Use a separate event structure to handle meta data writes.
+      Use libevent to dump graphs when necessary.
+      Use libevent to handle HUP signal.
+      Configure events after obtaining a socket.
+      Use libevent to send MTU probes.
+      Use libevent for retrying outgoing connections.
+      Remove legacy event system.
+      Properly use the timeout_initialized() macro.
+      Use libevent to handle all non-fatal signals.
+      Redo SIGALRM handling.
+      Use libevent to age past requests.
+      Use libevent to age learned MAC addresses.
+      Use libevent to handle key expiration.
+      Move key regeneration handling to net_setup.c.
+      Remove global variable "now".
+      Remove the last bits of the legacy main_loop().
+      Remove last references to the global variable "running".
+      K&R style braces
+      Use splay trees instead of AVL trees.
+      Detect duplicate outgoing connections.
+      More consistent variable naming.
+      Show branch version number.
+      Update documentation.
+      Start of control socket implementation.
+      We can safely delete a connection_t in terminate_connection() now.
+      Fix retrying outgoing connections.
+      Remove pidfile in favour of control socket.
+      Move key generation to tincctl.
+      Implement "stop" command, and allow tincctl to retrieve a running tincd's PID.
+      Use bufferevents to handle control socket buffering.
+      Use libevent for meta socket input/output buffering.
+      Parse PEM RSA keys ourself, and use libgcrypt to do RSA encryption and decryption.
+      Create wrappers for the cryptographic operations used in tinc.
+      Make sure the crypto wrapper functions can actually be compiled.
+      Some more crypto wrapper functions are needed.
+      Finish crypto wrapping. Also provide wrappers for OpenSSL.
+      Only check for libgcrypt if --with-gcrypt is used.
+      Fix formatting of --help output.
+      Small fixes to make gcrypt routines compile.
+      Apply patch from Scott Lamb: Update documentation to match tincctl changes
+      Fix connection weight estimation.
+      Use a dummy function as the read callback for connection bufferevents. Should not be triggered.
+      Fix meta data segfault when receiving a partial command.
+      Prevent double free() of a used challenge nonce.
+      Look in the configured sbin directory for the tincd binary.
+      Only show meta connection related debug messages when debug level >= 4
+      Move AC_GNU_SOURCE up to make autoconf happy.
+      Use the crypto wrappers again instead of calling OpenSSL directly.
+      Backport fixes from trunk since revision 1555.
+      Fix compiler warnings.
+      Remove unnecessary parentheses from sizeof, apply sizeof to variables instead of types whereever possible.
+      Remove wrong checks.
+      Use Dijkstra's algorithm. Based on patches from Max Rijevskiy.
+      Make sure IPv6 sockets are IPv6 only.
+      Move RSA key generation into the wrappers.
+      Merge branch 'master' into 1.1
+      Merge branch 'master' into 1.1
+      Handle truncated message authentication codes.
+      Fix pointer arithmetic when creating and verifying message authentication codes.
+      Merge branch 'master' into 1.1
+      Add missing #include.
+      Use correct format specifiers.
+      Replace asprintf()s not covered by the merge to xasprintf().
+      Add a better autoconf check for libevent.
+      Merge branch 'master' into 1.1
+      Drop localisation and checkpoint tracing in files not covered by the merge.
+      Update FSF address in files not covered by the merge.
+      Merge branch 'master' into 1.1
+      Don't enable device events when there is no valid filedescriptor.
+      Use %x instead of %lx where appropriate.
+      Handle truncated message authentication codes with gcrypt.
+      Handle PKCS#5 padding in the gcrypt backend.
+      Make sure the 1.1 branch compiles in a MinGW environment.
+      Better integration of libevent in build system.
+      Small fixes to get really working control sockets on Windows.
+      Use the TCP socket infrastructure for control sockets.
+      Only call ioctlsocket() on Windows.
+      Merge branch 'master' into 1.1
+      Fix compiler warnings.
+      Do not include OpenSSL headers directly.
+      Include missing header files and source directories.
+      Allow connections to be closed.
+      Start of a GUI for tinc.
+      Fix packet authentication.
+      Fix block cipher padding when using libgcrypt.
+      Reinitialise block cipher IV each time we encrypt a packet when using libgcrypt.
+      Fix reading raw RSA keys with libgcrypt.
+      recv() and recvfrom() return int, do not prematurely cast the return value.
+      Do not consider unreachable nodes when trying to determine packet origin.
+      Fix alignment of results of RSA operations when using libgcrypt.
+      Do not use hardcoded cipher block length when padding.
+      Remove unused AVL tree library.
+      Move source from lib/ to src/.
+      Fix experimental GUI when reading hexadecimal values.
+      Merge branch 'master' into 1.1
+      Fix merge of commit 4a0b9981513059755b9fd15b38fc198f46a0d6f2.
+      Add missing return statement.
+      Use correct digest length when checking a received key.
+      Do not try to free NULL pointers.
+      Remove obsolete lib/ directory.
+      Merge branch 'master' into 1.1
+      Link tincctl with dropin.o.
+      Merge branch 'master' into 1.1
+      Do not try to dereference myself->connection->config_tree.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Fix check for event initialization due to the merge.
+      Add simple buffer management code.
+      Remove use of bufferevent and eventbuffers, use our own buffering instead.
+      Several fixes for the buffer code.
+      Add per-node traffic counters.
+      Dump traffic statistics over control sockets.
+      Add an autoconf check for the curses library.
+      Add a very primitive "top" command to tincctl.
+      Allow inserting items in the middle of a list.
+      Nicer top command.
+      Add tincctl.h.
+      Add top.h.
+      Use GetItemCount() on ListCtrls instead of directly accessing ItemCount.
+      Fix some compiler warnings.
+      Compact input buffer before trying to read instead of after.
+      Always compact the buffer if it has reached MAXBUFSIZE.
+      Check if an event is initialized before calling event_del().
+      Reset tcplen after use.
+      Add the ability to dump all traffic going through route() over a control connection.
+      Allow tincctl to connect to something besides localhost.
+      Show hostname and port in error message when connecting to a running tincd.
+      Cosmetic fix when pressing 's' in tincctl top.
+      Initialise priority field to zero for packets read from the VPN interface.
+      Remove outgoing event in free_connection().
+      Simplify signal handling.
+      Drop the GNU malloc.c, realloc.c, and xmalloc.c.
+      Drop the GNU memcmp.c implementation.
+      Don't #include <alloca.h> anymore.
+      Remove unused functions and variables.
+      Remove support for the Ethertap device.
+      Fix some compiler and cppcheck warnings.
+      More stable sorting in tincctl top.
+      Make traffic statistics more readable with configurable scaling.
+      Fix nodes joining the VPN after tincctl top started.
+      Don't treat packets coming in via TCP as having zero length.
+      Remove debugging message that was accidentily left in.
+      Even simpler signal handling.
+      Small fixes for Windows.
+      Use send() when writing to sockets, and the return type is ssize_t.
+      Fix format strings for Windows.
+      Don't ignore SIGCHLD, system() needs it.
+      Clean up digests when freeing a connection_t.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Reopen log file after SIGHUP.
+      Only log UDP address changes at the appropriate debug levels.
+      No need to check for pselect() in tinc 1.1.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Delete mtuevent if it is not used.
+      Don't call event_del() from the mtuevent handler, always send_mtu_probe() in ans_key_h().
+      Don't use AM_CONDITIONAL for CURSES.
+      Add Makefile.am in gui/.
+      Update manpages and info manual.
+      Ensure that the texinfo manual can be converted to HTML.
+      Releasing 1.1pre1.
+      Ensure the right files end up in the tarball after make dist.
+      Thank Scott Lamb, Sven-Haegar Koch and Loïc Grenié in the NEWS file.
+      Merge Tinc.py into tinc-gui to simplify make install.
+      Re-add support for SIGALRM.
+      Don't call exit_control() if we didn't do init_control().
+      Rename controlcookie file to pidfile.
+      Make pid files backwards compatible and add address of listening socket.
+      Add +git to the version string.
+      Really stable sorting of tincctl top output.
+      Use pidfile in tinc-gui as well.
+      Don't react to escape character in tincctl top.
+      Update documentation to mention pidfiles instead of controlcookies.
+      Remove debug messages that were printed to stdout.
+      Add manpage for tinc-gui.
+      Preliminary implementation of Elliptic Curve Diffie-Hellman Ephemeral key exchange.
+      Support ECDH key exchange.
+      Add PRF to derive key material from the ECDH shared secret.
+      Use PRF.
+      Proper use of PRF.
+      No need to keep around pointers to EC_GROUP.
+      Cleanups in ECDH code.
+      Base64 encoding and decoding functions.
+      Add ECDSA key generation.
+      Have tincctl generate ECDSA keys.
+      Finish base64 decoding routine.
+      Add ECDSA key import.
+      Round up the size of the secret parts after splitting it in two.
+      Add a minor number to the protocol version.
+      Bump minor protocol to indicate ECDH capability for UDP session keys.
+      Implement ECDSA sign and verify operations.
+      Read ECDSA keys.
+      Very primitive ECDSA signed ECDH key exchange for the meta protocol.
+      Hash input before signing it with ECDSA.
+      Free ECDSA and RSA structures when freeing a connection_t.
+      Automatically exchange ECDSA keys and upgrade to new authentication protocol.
+      Close meta connection socket after cleaning up event structures.
+      Require ExperimentalProtocol = yes for new features, update documentation.
+      Don't use wildcards in filenames in configure.in.
+      Make hexadecimal and base64 routines behave the same.
+      Make use of the improved hex and base64 functions.
+      Remove unnecessary variables and functions.
+      Fix compiler warnings.
+      Use the correct direction flag when setting cipher keys.
+      Use the same logic as tinc 1.0.x for detecting two nodes with the same Name.
+      Use ECDSA to sign ECDH key exchange for UDP session keys.
+      Update info manual.
+      Use usleep() instead of sleep(), MinGW complained.
+      Use const pointer to source in base64 and hex routines.
+      Ensure symlinked files do not end up in the tarball.
+      Fix declaration of usleep().
+      "tincctl stop" now removes the tinc service on Windows.
+      Write loopback address instead of "any" address in pidfile.
+      Add missing newline.
+      Releasing 1.1pre2.
+      Fix tinc 1.0.x daemons connecting when ExperimentalProtocol = yes.
+      Don't abort() on low-level crypto errors, just return false.
+      Start of "Simple Peer-To-Peer Security" protocol.
+      Handle UDP packets with unknown source addresses properly.
+      Fix compiler warning.
+      Update SPTPS protocol.
+      Test corner cases in the SPTPS protocol.
+      Add counter mode encryption.
+      Use counter mode encryption.
+      Exchange ACK records to indicate switch to new keys.
+      Fix compiler warnings.
+      Fix a few small memory leaks.
+      Use only one hash algorithm (SHA512) in the PRF.
+      Remove useless warning about signature length being shorter than expected.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Apply HMAC after encryption.
+      Use SPTPS when ExperimentalProtocol is enabled.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Go back to breadth first search for path finding.
+      Ensure all SPTPS functions are prefixed with sptps_.
+      Let tincctl use the NETNAME environment variable if no -n option is given.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Don't close control connections when handling a reload command.
+      Allow log messages to be captured by tincctl.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Allow CTR mode counter to be set to a specific value.
+      Add datagram mode to the SPTPS protocol.
+      Test SPTPS messages sent while key renegotation is in progress.
+      Don't send an ACK message after the first key exchange in the SPTPS protocol.
+      Start documenting the SPTPS protocol.
+      Make sure the signature also covers the session label.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Add autoconf checks for OpenSSL's elliptic curve functions.
+      Update README to reflect that only OpenSSL is currently supported.
+      Always pass request strings to other functions as const char *.
+      Don't forget to send a newline when forwarding requests.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Fix crash when handling the ALRM signal.
+      Use /dev/tap0 by default on FreeBSD and NetBSD when using Mode = switch.
+      Document how to load the tap driver on FreeBSD.
+      Update THANKS file.
+      Merge branch 'master' into 1.1
+      "tincctl init" creates initial directory structure, tinc.conf and keypairs.
+      Put every command in its own function.
+      Allow configuration variables to be added/removed using tincctl.
+      Stricter checks for node names.
+      Add an easy way to edit a configuration file.
+      Have tincctl notify a running tincd of configuration file changes.
+      Fix tincctl start.
+      Let tincctl ignore tincd options, so they will be passed on.
+      Fix tincctl dump.
+      Move all functions related to subnet parsing to subnet_parse.c.
+      "tincctl info" gives more human readable information about nodes or subnets.
+      Give an error message when tincctl info cannot parse the given subnet or address.
+      Strip default subnet weight from output.
+      Add an easy way to export and import host configuration files.
+      When exporting configuration files, don't copy Name variables.
+      Put minor protocol version in connection options so other nodes can see it.
+      Use minor protocol version to determine whether to use ECDH key exchange between nodes.
+      Never remove items from cmdline_conf.
+      Split setup_myself() into two functions, one for reloading configuration.
+      Allow more configuration variables to be changed when reloading configuration.
+      Prefer routes with lower weight as long as they do not increase the number of hops.
+      Make sure tinc compiles on Windows.
+      Make sure sptps.h and info.h are in the tarball.
+      BSD make doesn't like $<.
+      Fix various compiler warnings.
+      Call event_init() after detaching.
+      Add some checks when changing configuration.
+      Add a newline to a configuration file if it is missing.
+      Have tincd and tincctl use the same method of determining netname.
+      Fix some compiler warnings.
+      Fix crash when no netname is specified.
+      Don't try to mkdir(CONFDIR) on Windows when there is a registry key for tinc.
+      Use backslashes on Windows.
+      Windows doesn't like quotes around "edit" when calling it through system().
+      Fix exit code when installing tincd as a service on Windows.
+      tincctl init now also creates a template tinc-up script.
+      Have tinc-gui use same way of locating pidfile as tincd and tincctl.
+      Remove unused po/ directory.
+      Also clarify hostnames=[yes|no] in tinc.conf(5).
+      Merge branch 'master' into 1.1
+      Use datagram SPTPS for packet exchange between nodes.
+      Remove unused #include.
+      Handle SPTPS datagrams in try_mac().
+      Add Brandon Black's replay window code to SPTPS.
+      Use a status bit to track which nodes use SPTPS.
+      Try sending SIGTERM if we cannot connect to a tincd but we know its PID.
+      tincctl restart should work even if no tincd is running.
+      Add the ability to query configuration variables to tincctl.
+      Add missing configuration variables.
+      Stricter checks for netname and node names.
+      Update the documentation to encourage using "tincctl init" and "tincctl config".
+      Clear struct sptps before reusing it.
+      Have tincctl act as a shell when no command is given.
+      Optionally compress and/or strip Ethernet header from SPTPS packets.
+      Add readline completion for tincctl config and tincctl info.
+      Fork when using the "start" command in tincctl.
+      Make sure the top command can be used more than once in tincctl's shell.
+      Add bash completion script.
+      Fix segfault when using tincctl's shell without readline.
+      Quit when "exit" or "quit" commands are used in tincctl's shell.
+      Fix node name check for "connect" and "disconnect" commands.
+      Properly handle SPTPS packets with stripped Ethernet headers.
+      Remove some debug messages.
+      Remove newlines at end of log messages.
+      Add a simple hash table implementation.
+      Use hash tables to lookup owners of addresses.
+      Replace node_udp_tree with a hash table.
+      Ensure sptps_test compiles with -flto.
+      Attribution for Vil Brekin and some code style cleanups.
+      Don't ignore Makefile.am.
+      Fix typo in manpage.
+      Remove remnants of Ethertap and old TUNSETIFF ioctl().
+      Keep last known address and time since reachability changed.
+      Let tincctl parse and format dumps.
+      Allow dumping either directed or undirected graphs.
+      Update documentation of the "dump graph" command.
+      Comment out old public/private keys when generating new ones.
+      Fix links in documentation.
+      Fix links in documenation.
+      Let the GUI handle the new dump format.
+      Fix column sorting, make all lists sortable.
+      Correctly add/remove outgoing connections when reloading configuration.
+      Make tincctl robust against dropped control connections.
+      Remove some debugging messages.
+      Attribution for Martin Schürrer.
+      Add strict checks to hex to binary conversions.
+      Merge branch 'master' into 1.1
+      Fix not reading Port statement from host config file.
+      Remove unused function declaration.
+      Make sure sptps_test compiles without -flto.
+      Remove abort() call that accidentily sneaked into commit dd1b69e.
+      Libreadline might depend on libcurses.
+      Fix off-by-one error.
+      Improve starting/stopping tincd using tincctl.
+      Clear connection options and status fields in free_connection_partially().
+      When terminating, keep control connections open until the end.
+      Useful error messages when writing to a meta connection fails.
+      Make datagram SPTPS key exchange more robust.
+      Handle packets encrypted via SPTPS that need to be forwarded via TCP.
+      Remove a debug message.
+      Fix warnings from cppcheck.
+      Refactor outgoing connection handling.
+      Replace the connection_tree with a connection_list.
+      C99 extravaganza.
+      Fix deleting connections from the connection list.
+      Remove unused variables, fix some #includes.
+      Clear Ethernet header when reading packets from a tun device.
+      Fix memory leaks found by valgrind.
+      Fix hash functions for keys whose size is not divisible by 4.
+      Try all known addresses of node during the PMTU discovery phase.
+      Fix whitespace.
+      Clear status and options fields of unreachable nodes.
+      Strip newline from incoming SPTPS requests.
+      Fix handling of initial datagram SPTPS packet.
+      Only log success of initial datagram SPTPS handshake.
+      Make sure the ReplayWindow option works for SPTPS as well.
+      Log more messages using logger().
+      tincctl: add node colors and edge weight to graph dump.
+      Fix compile error on Windows.
+      Update copyright notices.
+      Fix a few compiler errors/warnings.
+      Releasing 1.1pre3.
+
+Sven-Haegar Koch (29):
+      Merge branch 'master' into 1.1
+      Fixed 1.0 miss-merges
+      Add missing AC_CHECK_HEADERS([dirent.h]) to configure.in
+      Function flush_meta() does not exist anymore.
+      README.git: tinc 1.1 needs libevent
+      Demote all LOG_EMERG to LOG_ERR, spamming all xterms is bad.
+      Fixed metadata protokoll corruption on forwarded requests
+      Fixed error logging on "Input buffer full" condition.
+      Removed two newlines from the end of log messages which created empty lines.
+      Use same definition for xalloc_fail_func as is really used.
+      sparse fixup: error: dubious one-bit signed bitfield
+      sparse fixup: error: too many arguments for function send_key_changed
+      sparse fixup: warning: symbol '...' was not declared. Should it be static?
+      sparse fixup: warning: non-ANSI function declaration of function '...'
+      sparse fixup: warning: Using plain integer as NULL pointer
+      fgets() returns NULL on error, not < 0
+      src/net_socket.c bind_to_address(): Use after free in error path.
+      do_outgoing_connection() may delete a failed connection, and the structure
+      sptps_stop(): clear pointers after free to avoid double free.
+      Remove confusing error message for failed reading in ECDSA keys.
+      ecdh & ecdsa: avoid some possible memory leaks in error conditions.
+      terminate_connection(): Avoid use-after-free and double-free for
+      terminate_connection(): only kill c->node->connection if it is pointing
+      free_connection_partially(): Avoid possible use-after-free for c->hischallenge
+      Label control connections for log output as "<control>", not "<unknown>".
+      terminate_connection(): delete non-outgoing (aka incoming) connections.
+      Silence SPTPS log messages, reduce them from DEBUG_ALWAYS to DEBUG_META.
+      free_connection_partially(): also reset remote protocol version infos
+      sptps.c: Add missing newline to log message.
+
+Scott Lamb (19):
+      Rename "event_t" to "tevent_t", along with associated functions.
+      A couple missed tevent things.
+      Convert to libevent.
+      Lots of svn:ignore entries
+      Revert to only requiring autoconf 2.59.
+      Refresh po/POTFILES.in.
+      Updated svn:ignores list for new symlinked sources and tincctl.
+      const correctness
+      Temporarily revert to old crypto code
+      Update documentation to match tincctl changes
+      Fix reload crash
+      Fancier protocol for control socket
+      Dump through control socket
+      Purge through the control socket
+      Alter debugging levels through control socket
+      Retry connections through control socket
+      Reload configuration through control socket
+      Coding style corrections
+      Use a control socket directory to restrict access
 
 Vilbrekin (5):
       Basic patch for android cross-compilation.
@@ -423,6 +1530,11 @@ Vilbrekin (5):
       Add basic .gitignore file, cleaning (most) files generated by autotools.
       Use __ANDROID__ define rather than dirty hard-code to allow android NDK cross-compilation.
       Android cross-compilation instructions.
+
+Michael Tokarev (3):
+      don't mention reload twice in tincctl help
+      run tincd from the same directory as tincctl and pass all options to it
+      use execvp() not execve() in tincctl start
 
 Martin Schürrer (1):
       Output details of encryption errors
@@ -521,6 +1633,275 @@ Guus Sliepen (4):
       Flush output buffer in send_tcppacket().
       Use usleep() instead of sleep(), MinGW complained.
       Releasing 1.0.16.
+
+Version 1.1pre2                                             July 17 2011
+------------------------------------------------------------------------
+
+Guus Sliepen (54):
+      Ensure the right files end up in the tarball after make dist.
+      Thank Scott Lamb, Sven-Haegar Koch and Loïc Grenié in the NEWS file.
+      Merge Tinc.py into tinc-gui to simplify make install.
+      Re-add support for SIGALRM.
+      Don't call exit_control() if we didn't do init_control().
+      Rename controlcookie file to pidfile.
+      Make pid files backwards compatible and add address of listening socket.
+      Add +git to the version string.
+      Really stable sorting of tincctl top output.
+      Use pidfile in tinc-gui as well.
+      Don't react to escape character in tincctl top.
+      Update documentation to mention pidfiles instead of controlcookies.
+      Remove debug messages that were printed to stdout.
+      Add manpage for tinc-gui.
+      Preliminary implementation of Elliptic Curve Diffie-Hellman Ephemeral key exchange.
+      Support ECDH key exchange.
+      Add PRF to derive key material from the ECDH shared secret.
+      Use PRF.
+      Proper use of PRF.
+      No need to keep around pointers to EC_GROUP.
+      Cleanups in ECDH code.
+      Base64 encoding and decoding functions.
+      Add ECDSA key generation.
+      Have tincctl generate ECDSA keys.
+      Finish base64 decoding routine.
+      Add ECDSA key import.
+      Round up the size of the secret parts after splitting it in two.
+      Add a minor number to the protocol version.
+      Bump minor protocol to indicate ECDH capability for UDP session keys.
+      Implement ECDSA sign and verify operations.
+      Read ECDSA keys.
+      Very primitive ECDSA signed ECDH key exchange for the meta protocol.
+      Hash input before signing it with ECDSA.
+      Free ECDSA and RSA structures when freeing a connection_t.
+      Automatically exchange ECDSA keys and upgrade to new authentication protocol.
+      Close meta connection socket after cleaning up event structures.
+      Require ExperimentalProtocol = yes for new features, update documentation.
+      Don't use wildcards in filenames in configure.in.
+      Make hexadecimal and base64 routines behave the same.
+      Make use of the improved hex and base64 functions.
+      Remove unnecessary variables and functions.
+      Fix compiler warnings.
+      Use the correct direction flag when setting cipher keys.
+      Use the same logic as tinc 1.0.x for detecting two nodes with the same Name.
+      Use ECDSA to sign ECDH key exchange for UDP session keys.
+      Update info manual.
+      Use usleep() instead of sleep(), MinGW complained.
+      Use const pointer to source in base64 and hex routines.
+      Ensure symlinked files do not end up in the tarball.
+      Fix declaration of usleep().
+      "tincctl stop" now removes the tinc service on Windows.
+      Write loopback address instead of "any" address in pidfile.
+      Add missing newline.
+      Releasing 1.1pre2.
+
+Version 1.1pre1                                             June 25 2011
+------------------------------------------------------------------------
+
+Guus Sliepen (164):
+      Created the 1.1 branch where large code changes can take place,
+      Only free members of connection_t that have been allocated.
+      Port fixes from release 1.0.8.
+      Properly delete listener socket events on shutdown.
+      128 listener sockets is way too much.
+      Use a separate event structure to handle meta data writes.
+      Use libevent to dump graphs when necessary.
+      Use libevent to handle HUP signal.
+      Configure events after obtaining a socket.
+      Use libevent to send MTU probes.
+      Use libevent for retrying outgoing connections.
+      Remove legacy event system.
+      Properly use the timeout_initialized() macro.
+      Use libevent to handle all non-fatal signals.
+      Redo SIGALRM handling.
+      Use libevent to age past requests.
+      Use libevent to age learned MAC addresses.
+      Use libevent to handle key expiration.
+      Move key regeneration handling to net_setup.c.
+      Remove global variable "now".
+      Remove the last bits of the legacy main_loop().
+      Remove last references to the global variable "running".
+      K&R style braces
+      Use splay trees instead of AVL trees.
+      Detect duplicate outgoing connections.
+      More consistent variable naming.
+      Show branch version number.
+      Update documentation.
+      Start of control socket implementation.
+      We can safely delete a connection_t in terminate_connection() now.
+      Fix retrying outgoing connections.
+      Remove pidfile in favour of control socket.
+      Move key generation to tincctl.
+      Implement "stop" command, and allow tincctl to retrieve a running tincd's PID.
+      Use bufferevents to handle control socket buffering.
+      Use libevent for meta socket input/output buffering.
+      Parse PEM RSA keys ourself, and use libgcrypt to do RSA encryption and decryption.
+      Create wrappers for the cryptographic operations used in tinc.
+      Make sure the crypto wrapper functions can actually be compiled.
+      Some more crypto wrapper functions are needed.
+      Finish crypto wrapping. Also provide wrappers for OpenSSL.
+      Only check for libgcrypt if --with-gcrypt is used.
+      Fix formatting of --help output.
+      Small fixes to make gcrypt routines compile.
+      Apply patch from Scott Lamb: Update documentation to match tincctl changes
+      Fix connection weight estimation.
+      Use a dummy function as the read callback for connection bufferevents. Should not be triggered.
+      Fix meta data segfault when receiving a partial command.
+      Prevent double free() of a used challenge nonce.
+      Look in the configured sbin directory for the tincd binary.
+      Only show meta connection related debug messages when debug level >= 4
+      Move AC_GNU_SOURCE up to make autoconf happy.
+      Use the crypto wrappers again instead of calling OpenSSL directly.
+      Backport fixes from trunk since revision 1555.
+      Fix compiler warnings.
+      Remove unnecessary parentheses from sizeof, apply sizeof to variables instead of types whereever possible.
+      Remove wrong checks.
+      Use Dijkstra's algorithm. Based on patches from Max Rijevskiy.
+      Make sure IPv6 sockets are IPv6 only.
+      Move RSA key generation into the wrappers.
+      Merge branch 'master' into 1.1
+      Merge branch 'master' into 1.1
+      Handle truncated message authentication codes.
+      Fix pointer arithmetic when creating and verifying message authentication codes.
+      Merge branch 'master' into 1.1
+      Add missing #include.
+      Use correct format specifiers.
+      Replace asprintf()s not covered by the merge to xasprintf().
+      Add a better autoconf check for libevent.
+      Merge branch 'master' into 1.1
+      Drop localisation and checkpoint tracing in files not covered by the merge.
+      Update FSF address in files not covered by the merge.
+      Merge branch 'master' into 1.1
+      Don't enable device events when there is no valid filedescriptor.
+      Use %x instead of %lx where appropriate.
+      Handle truncated message authentication codes with gcrypt.
+      Handle PKCS#5 padding in the gcrypt backend.
+      Make sure the 1.1 branch compiles in a MinGW environment.
+      Better integration of libevent in build system.
+      Small fixes to get really working control sockets on Windows.
+      Use the TCP socket infrastructure for control sockets.
+      Only call ioctlsocket() on Windows.
+      Merge branch 'master' into 1.1
+      Fix compiler warnings.
+      Do not include OpenSSL headers directly.
+      Include missing header files and source directories.
+      Allow connections to be closed.
+      Start of a GUI for tinc.
+      Fix packet authentication.
+      Fix block cipher padding when using libgcrypt.
+      Reinitialise block cipher IV each time we encrypt a packet when using libgcrypt.
+      Fix reading raw RSA keys with libgcrypt.
+      recv() and recvfrom() return int, do not prematurely cast the return value.
+      Do not consider unreachable nodes when trying to determine packet origin.
+      Fix alignment of results of RSA operations when using libgcrypt.
+      Do not use hardcoded cipher block length when padding.
+      Remove unused AVL tree library.
+      Move source from lib/ to src/.
+      Fix experimental GUI when reading hexadecimal values.
+      Merge branch 'master' into 1.1
+      Fix merge of commit 4a0b9981513059755b9fd15b38fc198f46a0d6f2.
+      Add missing return statement.
+      Use correct digest length when checking a received key.
+      Do not try to free NULL pointers.
+      Remove obsolete lib/ directory.
+      Merge branch 'master' into 1.1
+      Link tincctl with dropin.o.
+      Merge branch 'master' into 1.1
+      Do not try to dereference myself->connection->config_tree.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Fix check for event initialization due to the merge.
+      Add simple buffer management code.
+      Remove use of bufferevent and eventbuffers, use our own buffering instead.
+      Several fixes for the buffer code.
+      Add per-node traffic counters.
+      Dump traffic statistics over control sockets.
+      Add an autoconf check for the curses library.
+      Add a very primitive "top" command to tincctl.
+      Allow inserting items in the middle of a list.
+      Nicer top command.
+      Add tincctl.h.
+      Add top.h.
+      Use GetItemCount() on ListCtrls instead of directly accessing ItemCount.
+      Fix some compiler warnings.
+      Compact input buffer before trying to read instead of after.
+      Always compact the buffer if it has reached MAXBUFSIZE.
+      Check if an event is initialized before calling event_del().
+      Reset tcplen after use.
+      Add the ability to dump all traffic going through route() over a control connection.
+      Allow tincctl to connect to something besides localhost.
+      Show hostname and port in error message when connecting to a running tincd.
+      Cosmetic fix when pressing 's' in tincctl top.
+      Initialise priority field to zero for packets read from the VPN interface.
+      Remove outgoing event in free_connection().
+      Simplify signal handling.
+      Drop the GNU malloc.c, realloc.c, and xmalloc.c.
+      Drop the GNU memcmp.c implementation.
+      Don't #include <alloca.h> anymore.
+      Remove unused functions and variables.
+      Remove support for the Ethertap device.
+      Fix some compiler and cppcheck warnings.
+      More stable sorting in tincctl top.
+      Make traffic statistics more readable with configurable scaling.
+      Fix nodes joining the VPN after tincctl top started.
+      Don't treat packets coming in via TCP as having zero length.
+      Remove debugging message that was accidentily left in.
+      Even simpler signal handling.
+      Small fixes for Windows.
+      Use send() when writing to sockets, and the return type is ssize_t.
+      Fix format strings for Windows.
+      Don't ignore SIGCHLD, system() needs it.
+      Clean up digests when freeing a connection_t.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Reopen log file after SIGHUP.
+      Only log UDP address changes at the appropriate debug levels.
+      No need to check for pselect() in tinc 1.1.
+      Merge branch 'master' of git://tinc-vpn.org/tinc into 1.1
+      Delete mtuevent if it is not used.
+      Don't call event_del() from the mtuevent handler, always send_mtu_probe() in ans_key_h().
+      Don't use AM_CONDITIONAL for CURSES.
+      Add Makefile.am in gui/.
+      Update manpages and info manual.
+      Ensure that the texinfo manual can be converted to HTML.
+      Releasing 1.1pre1.
+
+Scott Lamb (19):
+      Rename "event_t" to "tevent_t", along with associated functions.
+      A couple missed tevent things.
+      Convert to libevent.
+      Lots of svn:ignore entries
+      Revert to only requiring autoconf 2.59.
+      Refresh po/POTFILES.in.
+      Updated svn:ignores list for new symlinked sources and tincctl.
+      const correctness
+      Temporarily revert to old crypto code
+      Update documentation to match tincctl changes
+      Fix reload crash
+      Fancier protocol for control socket
+      Dump through control socket
+      Purge through the control socket
+      Alter debugging levels through control socket
+      Retry connections through control socket
+      Reload configuration through control socket
+      Coding style corrections
+      Use a control socket directory to restrict access
+
+Sven-Haegar Koch (18):
+      Merge branch 'master' into 1.1
+      Fixed 1.0 miss-merges
+      Add missing AC_CHECK_HEADERS([dirent.h]) to configure.in
+      Function flush_meta() does not exist anymore.
+      README.git: tinc 1.1 needs libevent
+      Demote all LOG_EMERG to LOG_ERR, spamming all xterms is bad.
+      Fixed metadata protokoll corruption on forwarded requests
+      Fixed error logging on "Input buffer full" condition.
+      Removed two newlines from the end of log messages which created empty lines.
+      Use same definition for xalloc_fail_func as is really used.
+      sparse fixup: error: dubious one-bit signed bitfield
+      sparse fixup: error: too many arguments for function send_key_changed
+      sparse fixup: warning: symbol '...' was not declared. Should it be static?
+      sparse fixup: warning: non-ANSI function declaration of function '...'
+      sparse fixup: warning: Using plain integer as NULL pointer
+      fgets() returns NULL on error, not < 0
+      src/net_socket.c bind_to_address(): Use after free in error path.
+      do_outgoing_connection() may delete a failed connection, and the structure
 
 Version 1.0.15                                              June 24 2011
 ------------------------------------------------------------------------

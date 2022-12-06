@@ -4,7 +4,7 @@
 /*
     netutl.h -- header file for netutl.c
     Copyright (C) 1998-2005 Ivo Timmermans
-                  2000-2016 Guus Sliepen <guus@tinc-vpn.org>
+                  2000-2013 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,19 +25,15 @@
 
 extern bool hostnames;
 
-extern struct addrinfo *str2addrinfo(const char *address, const char *service, int socktype);
+extern struct addrinfo *str2addrinfo(const char *address, const char *service, int socktype) __attribute__((__malloc__));
 extern sockaddr_t str2sockaddr(const char *address, const char *port);
-extern void sockaddr2str(const sockaddr_t *sa, char **addrstr, char **portstr);
-extern char *sockaddr2hostname(const sockaddr_t *sa);
+extern void sockaddr2str(const sockaddr_t *sa, char **address, char **port);
+extern char *sockaddr2hostname(const sockaddr_t *sa) __attribute__((__malloc__));
 extern int sockaddrcmp(const sockaddr_t *a, const sockaddr_t *b);
 extern int sockaddrcmp_noport(const sockaddr_t *a, const sockaddr_t *b);
 extern void sockaddrunmap(sockaddr_t *sa);
 extern void sockaddrfree(sockaddr_t *sa);
 extern void sockaddrcpy(sockaddr_t *dest, const sockaddr_t *src);
 extern void sockaddr_setport(sockaddr_t *sa, const char *port);
-extern int maskcmp(const void *a, const void *b, int masklen);
-extern void maskcpy(void *dest, const void *src, int masklen, int len);
-extern void mask(void *mask, int masklen, int len);
-extern bool maskcheck(const void *mask, int masklen, int len);
 
 #endif

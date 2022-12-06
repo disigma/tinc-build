@@ -4,7 +4,7 @@
 /*
     have.h -- include headers which are known to exist
     Copyright (C) 1998-2005 Ivo Timmermans
-                  2003-2015 Guus Sliepen <guus@tinc-vpn.org>
+                  2003-2021 Guus Sliepen <guus@tinc-vpn.org>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,27 +22,23 @@
 */
 
 #ifdef HAVE_MINGW
-#ifdef WITH_WINDOWS2000
-#define WINVER Windows2000
-#else
 #define WINVER WindowsXP
-#endif
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 #include <stdio.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <signal.h>
 #include <errno.h>
-#include <limits.h>
-
 #include <fcntl.h>
 #include <unistd.h>
-#include <signal.h>
+#include <limits.h>
+#include <math.h>
+#include <time.h>
 
 #ifdef HAVE_MINGW
 #include <w32api.h>
@@ -51,19 +47,19 @@
 #include <ws2tcpip.h>
 #endif
 
-#ifdef HAVE_STDBOOL_H
-#include <stdbool.h>
-#endif
-
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
 
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
 #endif
 
 /* Include system specific headers */
+
+#ifdef HAVE_STDDEF_H
+#include <stddef.h>
+#endif
 
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
@@ -73,9 +69,6 @@
 #include <sys/time.h>
 #endif
 
-#ifdef HAVE_TIME_H
-#include <time.h>
-#endif
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -105,8 +98,8 @@
 #include <sys/resource.h>
 #endif
 
-#ifdef HAVE_SYS_UIO_H
-#include <sys/uio.h>
+#ifdef HAVE_SYS_UN_H
+#include <sys/un.h>
 #endif
 
 #ifdef HAVE_DIRENT_H
@@ -198,9 +191,6 @@
 
 #ifdef HAVE_ARPA_NAMESER_H
 #include <arpa/nameser.h>
-#ifdef STATUS
-#undef STATUS
-#endif
 #endif
 
 #ifdef HAVE_RESOLV_H
@@ -209,6 +199,22 @@
 
 #ifdef HAVE_LINUX_IF_TUN_H
 #include <linux/if_tun.h>
+#endif
+
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#else
+#include "getopt.h"
+#endif
+
+#ifdef STATUS
+#undef STATUS
+#endif
+
+#ifdef HAVE_MINGW
+#define SLASH "\\"
+#else
+#define SLASH "/"
 #endif
 
 #endif
