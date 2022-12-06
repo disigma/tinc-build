@@ -1,0 +1,58 @@
+# https://github.com/github/gitignore
+
+# JetBrains
+.idea/
+*.iml
+cmake-build-*/
+
+# Vim Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Temporary
+*~
+
+# Vim tag files
+tags
+
+# Vim Persistent undo
+[._]*.un~
+
+# Mac
+.DS_Store
+._*
+
+# Xcode
+xcuserdata/
+
+# Build
+/build
+/target
+
+# Wimal
+/cmake/.cache
+/cmake/wimal
+
+# Makefile
+/*/*/Makefile
+/3rd/*/*/Makefile
+
+# VSCode
+.vscode/
+.cache/
+compile_commands.json
+
+# Clangd
+.clangd/
+
+# ccls
+.ccls-cache/
+
+# Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
